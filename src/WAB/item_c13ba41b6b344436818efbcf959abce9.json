@@ -1,0 +1,60 @@
+{
+  "id": "c13ba41b6b344436818efbcf959abce9",
+  "owner": "bcooper_EPA",
+  "orgId": "cJ9YHowT8TU7DUyn",
+  "created": 1509640806000,
+  "modified": 1576247519000,
+  "guid": null,
+  "name": null,
+  "title": "WATERS GeoViewer Map Image Layer",
+  "type": "Map Service",
+  "typeKeywords": [
+    "ArcGIS Server",
+    "Data",
+    "Dynamic",
+    "Map Service",
+    "Multilayer",
+    "Service"
+  ],
+  "description": "<div><div>The EPA Office of Water\u2019s <a href='https://www.epa.gov/waterdata/waters-watershed-assessment-tracking-environmental-results-system' rel='nofollow ugc' target='_blank'>Watershed Assessment, Tracking and Environmental Results system (WATERS)<\/a> integrates water-related information by linking it to the NHDPlus stream network.  The <a href='https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus' rel='nofollow ugc' target='_blank'>National Hydrgraphy Dataset Plus (NHDPlus)<\/a> provides the underlying geospatial hydrologic framework that supports a variety of network-based capabilities including upstream/downstream search and watershed delineation.  The WATERS GeoViewer provides easy access to these data and capabilities via the Internet on any desktop or mobile device.  It implements the concepts and principles of the <a href='https://www.fgdc.gov/initiatives/open-water-data-initiative' rel='nofollow ugc' target='_blank'>Open Water Data Initiative<\/a>, including the hydrologic <a href='https://my.usgs.gov/confluence/display/qwdp/Networked+Linked+Data+Index' rel='nofollow ugc' target='_blank'>Network Linked Data Index<\/a>.<\/div><div><br /><\/div><div>This EPA GeoPlatform entry can be used as an official reference for the EPA Office of Water ArcGIS server service. EPA GeoPlatform and ArcGIS Online users are encouraged to use this reference as the underlying location to the ArcGIS Server service may change over time. As the location changes, this reference will be updated to keep consumer applications up-to-date.<\/div><\/div><div><br /><\/div><div>This Map Image Layer contains preconfigured popups for each feature class in the map service. The popups provide access to feature level attributes.<\/div><div><br /><\/div><div><b><font size='4'>Layer Metadata:<\/font><\/b><\/div><div><ul><li><b>EPA Linked Data<\/b><br /><\/li><ul><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B66F27299-6B1B-42BF-8AA0-1127D7646631%7D' rel='nofollow ugc' target='_blank'>303(d) Listed Impaired Waters<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B81060F20-4F5C-42E2-BBC7-CD96E442B8FA%7D' rel='nofollow ugc' target='_blank'>305(b) Assessed Waters<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B4A2F897E-E1E4-453E-9A29-674A520E4B92%7D' rel='nofollow ugc' target='_blank'>Beaches<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B799C26D1-2AFB-4A6B-AA7B-ED536CC9CC3F%7D' rel='nofollow ugc' target='_blank'>Clean Watersheds Needs Survey<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B02DB5327-FD21-4B23-B34B-DF00FD38EDBE%7D' rel='nofollow ugc' target='_blank'>Fish Consumption Advisories<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B02DB5327-FD21-4B23-B34B-DF00FD38EDBE%7D' rel='nofollow ugc' target='_blank'>Fish Tissue Data<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B091FC504-8762-8E7F-DCD7-513F648BC5B5%7D' rel='nofollow ugc' target='_blank'>Facilities that Discharge to Water<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7B88E53742-CF0D-443C-94AF-8139C09471F9%7D' rel='nofollow ugc' target='_blank'>TMDLs on Impaired Waters<\/a><br /><\/li><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7BA95D2B4C-0342-4133-8C17-EDAD2F1D982D%7D' rel='nofollow ugc' target='_blank'>Water Monitoring<\/a><br /><\/li><\/ul><ul><li><a href='https://edg.epa.gov/metadata/catalog/search/resource/details.page?uuid=%7BACFE9920-1147-23CF-2017-23B3CBFED562%7D' rel='nofollow ugc' target='_blank'>Nonpoint Source Projects<\/a><br />     <\/li><\/ul><li><b>Other Linked Data<\/b><\/li><ul><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>USGS Streamgages<\/a><br />     <\/li><\/ul><li><b>Surface Water Features<\/b><\/li><ul><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Flow Direction<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Streams<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Canals<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Pipelines<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Waterbodies<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Coastlines<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Catchments<\/a><br /><\/li><li><a href='https://s3.amazonaws.com/nhdplus/NHDPlusV21/Documentation/Metadata/NHDPlusV2_metadata.htm' rel='nofollow ugc' target='_blank'>Hydrologic Units<\/a><br /><\/li><\/ul><\/ul><\/div>",
+  "tags": ["WATERS"],
+  "snippet": "This Map Image Layer is configured as a wrapper around the US EPA Office of Water WATERS GeoViewer ArcGIS Server services.",
+  "thumbnail": "thumbnail/thumbnail.png",
+  "documentation": null,
+  "extent": [
+    [
+      -176.7222,
+      -14.3742
+    ],
+    [
+      145.8307,
+      70.409
+    ]
+  ],
+  "categories": [],
+  "spatialReference": null,
+  "accessInformation": "Maintainer: US EPA Office of Water.\nData source(s): Various federal, state, local, and water agency.  Acknowledgement of the EPA would be appreciated.",
+  "licenseInfo": "The user is responsible for reading and evaluating dataset limitations, restrictions, and intended use. For additional information, please see <a href='https://www.epa.gov/waterdata/waters-terms-use-and-disclaimer' rel='nofollow ugc' target='_blank'>WATERS Terms of Use and Disclaimer<\/a>.",
+  "culture": "en-us",
+  "properties": null,
+  "url": "https://watersgeo.epa.gov/arcgis/rest/services/OWOTHER/WATERS_GeoViewer/MapServer",
+  "proxyFilter": null,
+  "access": "public",
+  "size": 92,
+  "subInfo": 0,
+  "appCategories": [],
+  "industries": [],
+  "languages": [],
+  "largeThumbnail": null,
+  "banner": null,
+  "screenshots": [],
+  "listed": false,
+  "commentsEnabled": true,
+  "numComments": 0,
+  "numRatings": 0,
+  "avgRating": 0,
+  "numViews": 249692,
+  "scoreCompleteness": 83,
+  "groupDesignations": null,
+  "contentOrigin": "self"
+}

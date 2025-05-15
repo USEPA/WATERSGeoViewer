@@ -1,0 +1,52 @@
+{
+	"type": "Web Map App",
+	"link": "https://epa.maps.arcgis.com/home/item.html?id=ada349b90c26496ea52aab66a092593b",
+	"item": "https://epa.maps.arcgis.com/sharing/rest/content/items/ada349b90c26496ea52aab66a092593b?f=pjson",
+	"data": "https://epa.maps.arcgis.com/sharing/rest/content/items/ada349b90c26496ea52aab66a092593b/data/?f=pjson",
+	"children": [{
+			"type": "Web Map",
+			"link": "https://epa.maps.arcgis.com/home/item.html?id=f471e0f5650142e092cd1f29b37d04a3",
+			"item": "https://epa.maps.arcgis.com/sharing/rest/content/items/f471e0f5650142e092cd1f29b37d04a3?f=pjson",
+			"data": "https://epa.maps.arcgis.com/sharing/rest/content/items/f471e0f5650142e092cd1f29b37d04a3/data/?f=pjson",
+         "visibleLayers": [
+            2,
+            3,
+            4,
+            6,
+            7,
+            8,
+            11,
+            12,
+            13,
+            15,
+            16,
+            17,
+            19,
+            20,
+            21,
+            24,
+            25,
+            26,
+            29,
+            30,
+            31,
+            34,
+            35,
+            36,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+         ],
+			"children": [{
+					"type": "Map Image Layer",
+					"link": "https://epa.maps.arcgis.com/home/item.html?id=c13ba41b6b344436818efbcf959abce9",
+					"item": "https://epa.maps.arcgis.com/sharing/rest/content/items/c13ba41b6b344436818efbcf959abce9?f=pjson",
+					"data": "https://epa.maps.arcgis.com/sharing/rest/content/items/c13ba41b6b344436818efbcf959abce9/data/?f=pjson"
+				}
+			]
+		}
+	]
+}
