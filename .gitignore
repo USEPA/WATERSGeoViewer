@@ -1,0 +1,12 @@
+/**/GpMessages
+/**/Index
+/**/scratch
+/**/ImportLog
+/**/.backups
+/**/__pycache__
+/**/*.gdb
+*.sde
+*.ags
+*.pyHistory
+*.sd
+*.sddraft
