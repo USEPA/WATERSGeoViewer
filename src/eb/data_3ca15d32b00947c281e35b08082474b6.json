@@ -1,4 +1,4 @@
-[⚠️ Suspicious Content] {
+{
     "pages": {
         "home": {
             "type": "NORMAL",
@@ -3517,7 +3517,7 @@
                                     {
                                         "name": "StreamSelectionType",
                                         "dataType": "GPString",
-                                        "displayName": "StreamSelectionType",
+                                        "displayName": "Stream Selection Type",
                                         "description": "Enter a keyword indicating the type of network search requested:Upstream with TributariesUpstream Mainline onlyDownstream with DivergencesDownstream Mainline onlyTo learn more about searching the NHDPlus network, visit the NHDPlus v2.1 User Guide and reference the section entitled Understanding and Using NHDPlusV2 and specifically the subsection entitled NHDPlus and Divergences for an explanation and illustrations of the main and minor paths associated with divergences.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "Upstream with Tributaries",
@@ -3534,7 +3534,7 @@
                                     {
                                         "name": "StartingPoint",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "StartingPoint",
+                                        "displayName": "Starting Point",
                                         "description": "Enter a start point as a feature class complex object. May be any valid simple point feature class the server can access. The point will be snapped to nearest NHDPlus flowline for use in drainage area delineation. ",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": {
@@ -3556,12 +3556,13 @@
                                         },
                                         "parameterType": "esriGPParameterTypeOptional",
                                         "category": "",
-                                        "selectFromMapLayer": true
+                                        "selectFromMapLayer": true,
+                                        "hideBrowseButton": true
                                     },
                                     {
                                         "name": "MaxDistanceKm",
                                         "dataType": "GPString",
-                                        "displayName": "MaxDistanceKm",
+                                        "displayName": "Maximum Distance (Km)",
                                         "description": "The distance in kilometers at which to restrict the network search.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
@@ -3571,7 +3572,7 @@
                                     {
                                         "name": "MaxFlowtimeDay",
                                         "dataType": "GPString",
-                                        "displayName": "MaxFlowtimeDay",
+                                        "displayName": "Maximum Flow Time (Days)",
                                         "description": "The flowtime in days at which to restrict the network search.  Nonfunctional at this time.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
@@ -3581,7 +3582,7 @@
                                     {
                                         "name": "ShowSelectedStreams",
                                         "dataType": "GPBoolean",
-                                        "displayName": "ShowSelectedStreams",
+                                        "displayName": "Show Selected Streams",
                                         "description": "Option to return selected streams as a feature layer.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": false,
@@ -3591,7 +3592,7 @@
                                     {
                                         "name": "ShowSelectedCatchments",
                                         "dataType": "GPBoolean",
-                                        "displayName": "ShowSelectedCatchments",
+                                        "displayName": "Show Selected Catchments",
                                         "description": "Option to return selected catchments as a feature layer.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": false,
@@ -3601,17 +3602,18 @@
                                     {
                                         "name": "AdvancedConfiguration",
                                         "dataType": "GPString",
-                                        "displayName": "AdvancedConfiguration",
+                                        "displayName": "Advanced Configuration",
                                         "description": "Option to provide advanced directives to the geoprocessing service.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
                                         "parameterType": "esriGPParameterTypeOptional",
-                                        "category": ""
+                                        "category": "",
+                                        "invisible": true
                                     },
                                     {
                                         "name": "ResultDelineatedArea",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultDelineatedArea",
+                                        "displayName": "Result: Delineated Area",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -3692,7 +3694,7 @@
                                     {
                                         "name": "ResultStreamsSelected",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultStreamsSelected",
+                                        "displayName": "Result: Streams Selected",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -3890,7 +3892,7 @@
                                     {
                                         "name": "ResultCatchmentsSelected",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultCatchmentsSelected",
+                                        "displayName": "Result: Catchments Selected",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -3971,7 +3973,7 @@
                                     {
                                         "name": "ResultLinkPath",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultLinkPath",
+                                        "displayName": "Result: Link Path",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -4013,7 +4015,7 @@
                                     {
                                         "name": "StatusMessage",
                                         "dataType": "GPString",
-                                        "displayName": "StatusMessage",
+                                        "displayName": "Status Message",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": "",
@@ -4029,20 +4031,88 @@
                             "toolUrl": "https://inlandwaters.geoplatform.gov/arcgis/rest/services/WATERS_SERVICES/GeoplatformDrainageAreaDelineation/GPServer/DelineateUsingStartingPoint",
                             "output": {
                                 "ignored": {},
-                                "allowExport": {},
+                                "allowExport": {
+                                    "ResultDelineatedArea": false
+                                },
                                 "decimalPlace": {},
                                 "dateFormat": {},
                                 "timeFormat": {},
                                 "addResultLayersToMapAuto": {
                                     "ResultDelineatedArea": true,
                                     "ResultStreamsSelected": true,
-                                    "ResultCatchmentsSelected": true,
+                                    "ResultCatchmentsSelected": false,
                                     "ResultLinkPath": true
+                                },
+                                "symbol": {
+                                    "ResultLinkPath": {
+                                        "type": "esriSLS",
+                                        "color": [
+                                            247,
+                                            150,
+                                            70,
+                                            255
+                                        ],
+                                        "width": 2,
+                                        "style": "esriSLSSolid"
+                                    },
+                                    "ResultDelineatedArea": {
+                                        "type": "esriSFS",
+                                        "color": [
+                                            255,
+                                            255,
+                                            0,
+                                            204
+                                        ],
+                                        "outline": {
+                                            "type": "esriSLS",
+                                            "color": [
+                                                50,
+                                                50,
+                                                50,
+                                                255
+                                            ],
+                                            "width": 1,
+                                            "style": "esriSLSSolid"
+                                        },
+                                        "style": "esriSFSSolid"
+                                    },
+                                    "ResultStreamsSelected": {
+                                        "type": "esriSLS",
+                                        "color": [
+                                            255,
+                                            255,
+                                            130,
+                                            255
+                                        ],
+                                        "width": 2,
+                                        "style": "esriSLSSolid"
+                                    },
+                                    "ResultCatchmentsSelected": {
+                                        "type": "esriSFS",
+                                        "color": [
+                                            255,
+                                            255,
+                                            0,
+                                            204
+                                        ],
+                                        "outline": {
+                                            "type": "esriSLS",
+                                            "color": [
+                                                50,
+                                                50,
+                                                50,
+                                                255
+                                            ],
+                                            "width": 2,
+                                            "style": "esriSLSSolid"
+                                        },
+                                        "style": "esriSFSSolid"
+                                    }
                                 }
                             },
                             "option": {
                                 "showHelpLink": true,
-                                "link": "https://inlandwaters.geoplatform.gov/arcgis/rest/directories/arcgisoutput/WATERS_SERVICES/GeoplatformDrainageAreaDelineation_GPServer/WATERS_SERVICES_GeoplatformDrainageAreaDelineation/DelineateUsingStartingPoint.htm"
+                                "link": "https://www.epa.gov/waterdata/waters-geoviewer-tutorial#Watershed_Delineation"
                             }
                         }
                     }
@@ -5467,7 +5537,7 @@
                                     {
                                         "name": "StreamSelectionType",
                                         "dataType": "GPString",
-                                        "displayName": "StreamSelectionType",
+                                        "displayName": "Stream Selection Type",
                                         "description": "Navigation methodology for network discovery of linked data.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "Upstream with Tributaries",
@@ -5483,7 +5553,7 @@
                                     {
                                         "name": "StartingPoint",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "StartingPoint",
+                                        "displayName": "Starting Point",
                                         "description": "Coordinate location to be indexed to the appropriate NHDPlus flowline from which to begin the navigation. ",
                                         "direction": "esriGPParameterDirectionInput",
                                         "filter": {
@@ -5495,12 +5565,13 @@
                                         "defaultValue": {},
                                         "parameterType": "esriGPParameterTypeOptional",
                                         "category": "",
-                                        "selectFromMapLayer": true
+                                        "selectFromMapLayer": true,
+                                        "hideBrowseButton": true
                                     },
                                     {
                                         "name": "MaxDistanceKm",
                                         "dataType": "GPString",
-                                        "displayName": "MaxDistanceKm",
+                                        "displayName": "Maximum Distance (Km)",
                                         "description": "Distance in kilometers to limit navigation. If MaxDistanceKm or MaxFlowTimeDay is not provided the full extent of the navigation will be returned. For certain configurations in large networks this is likely to timeout or otherwise fail to return results.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
@@ -5510,7 +5581,7 @@
                                     {
                                         "name": "MaxFlowtimeDay",
                                         "dataType": "GPString",
-                                        "displayName": "MaxFlowtimeDay",
+                                        "displayName": "Maximum Flow Time (Days)",
                                         "description": "Flow time in days to limit navigation. If MaxDistanceKm or MaxFlowTimeDay is not provided the full extent of the navigation will be returned. For certain configurations in large networks this is likely to timeout or otherwise fail to return results.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
@@ -5520,11 +5591,11 @@
                                     {
                                         "name": "SearchForTheseLinkedData",
                                         "dataType": "GPMultiValue:GPString",
-                                        "displayName": "SearchForTheseLinkedData",
+                                        "displayName": "Search For These Linked Data",
                                         "description": "Choose linked data programs to discover during navigation.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": [
-                                            "Assessment, Total Maximum Daily Load Tracking and Implementation System (ATTAINS)"
+                                            "Water Quality Portal Monitoring Data"
                                         ],
                                         "parameterType": "esriGPParameterTypeOptional",
                                         "category": "",
@@ -5549,7 +5620,7 @@
                                     {
                                         "name": "AttributeHandling",
                                         "dataType": "GPString",
-                                        "displayName": "AttributeHandling",
+                                        "displayName": "Attribute Handling",
                                         "description": "Options for returning linked data program attributes.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "Separated",
@@ -5564,7 +5635,7 @@
                                     {
                                         "name": "ShowSelectedStreams",
                                         "dataType": "GPBoolean",
-                                        "displayName": "ShowSelectedStreams",
+                                        "displayName": "Show Selected Streams",
                                         "description": "Flag as to whether to return all flowlines of the navigation.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": false,
@@ -5574,17 +5645,18 @@
                                     {
                                         "name": "AdvancedConfiguration",
                                         "dataType": "GPString",
-                                        "displayName": "AdvancedConfiguration",
+                                        "displayName": "Advanced Configuration",
                                         "description": "Keywords reserved for advanced usage of the geoprocessing service.  Contact EPA Office of Water for more information.",
                                         "direction": "esriGPParameterDirectionInput",
                                         "defaultValue": "",
                                         "parameterType": "esriGPParameterTypeOptional",
-                                        "category": ""
+                                        "category": "",
+                                        "invisible": true
                                     },
                                     {
                                         "name": "ResultSourcePointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourcePointLinkedData",
+                                        "displayName": "Result: Source Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -5594,7 +5666,7 @@
                                     {
                                         "name": "ResultSourceLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourceLinearLinkedData",
+                                        "displayName": "Result: Source Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -5727,7 +5799,7 @@
                                     {
                                         "name": "ResultSourceAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourceAreaLinkedData",
+                                        "displayName": "Result: Source Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -5737,7 +5809,7 @@
                                     {
                                         "name": "ResultReachedPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedPointLinkedData",
+                                        "displayName": "Result: Reached Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -5929,7 +6001,7 @@
                                     {
                                         "name": "ResultReachedLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedLinearLinkedData",
+                                        "displayName": "Result: Reached Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -6136,7 +6208,7 @@
                                     {
                                         "name": "ResultReachedAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedAreaLinkedData",
+                                        "displayName": "Result: Reached Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -6146,7 +6218,7 @@
                                     {
                                         "name": "ResultSourceATTAINSPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourceATTAINSPointLinkedData",
+                                        "displayName": "Result: Source ATTAINS Point LinkedData",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -6156,7 +6228,7 @@
                                     {
                                         "name": "ResultSourceATTAINSLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourceATTAINSLinearLinkedData",
+                                        "displayName": "Result: Source ATTAINS Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -6681,7 +6753,7 @@
                                     {
                                         "name": "ResultSourceATTAINSAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultSourceATTAINSAreaLinkedData",
+                                        "displayName": "Result: Source ATTAINS Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -6691,7 +6763,7 @@
                                     {
                                         "name": "ResultReachedGRTSPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedGRTSPointLinkedData",
+                                        "displayName": "Result: Reached GRTS Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -7025,7 +7097,7 @@
                                     {
                                         "name": "ResultReachedGRTSLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedGRTSLinearLinkedData",
+                                        "displayName": "Result: Reached GRTS Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -7374,7 +7446,7 @@
                                     {
                                         "name": "ResultReachedGRTSAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedGRTSAreaLinkedData",
+                                        "displayName": "Result: Reached GRTS Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -7384,7 +7456,7 @@
                                     {
                                         "name": "ResultReachedCWNSPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedCWNSPointLinkedData",
+                                        "displayName": "Result: Reached CWNS Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -7576,7 +7648,7 @@
                                     {
                                         "name": "ResultReachedCWNSLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedCWNSLinearLinkedData",
+                                        "displayName": "Result: Reached CWNS Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -7783,7 +7855,7 @@
                                     {
                                         "name": "ResultReachedCWNSAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedCWNSAreaLinkedData",
+                                        "displayName": "Result: Reached CWNS Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -7793,7 +7865,7 @@
                                     {
                                         "name": "ResultReachedFishPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFishPointLinkedData",
+                                        "displayName": "Result: Reached Fish Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -7985,7 +8057,7 @@
                                     {
                                         "name": "ResultReachedFishLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFishLinearLinkedData",
+                                        "displayName": "Result: Reached Fish Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -8192,7 +8264,7 @@
                                     {
                                         "name": "ResultReachedFishAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFishAreaLinkedData",
+                                        "displayName": "Result: Reached Fish Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -8202,7 +8274,7 @@
                                     {
                                         "name": "ResultReachedFshTDPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFshTDPointLinkedData",
+                                        "displayName": "Result: Reached FshTD Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -8394,7 +8466,7 @@
                                     {
                                         "name": "ResultReachedFshTDLinearLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFshTDLinearLinkedData",
+                                        "displayName": "Result: Reached FshTD Linear Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -8601,7 +8673,7 @@
                                     {
                                         "name": "ResultReachedFshTDAreaLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFshTDAreaLinkedData",
+                                        "displayName": "Result: Reached FshTD Area Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {},
@@ -8611,7 +8683,7 @@
                                     {
                                         "name": "ResultReachedNPDESPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedNPDESPointLinkedData",
+                                        "displayName": "Result: Reached NPDES Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -8918,7 +8990,7 @@
                                     {
                                         "name": "ResultReachedFRSPubPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedFRSPubPointLinkedData",
+                                        "displayName": "Result: Reached FRSPub Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -9231,7 +9303,7 @@
                                     {
                                         "name": "ResultReachedWQPPointLinkedData",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultReachedWQPPointLinkedData",
+                                        "displayName": "Result: Reached WQP Point Linked Data",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -9669,7 +9741,7 @@
                                     {
                                         "name": "ResultStreamsSelected",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultStreamsSelected",
+                                        "displayName": "Result: Streams Selected",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -9862,7 +9934,7 @@
                                     {
                                         "name": "ResultLinkPath",
                                         "dataType": "GPFeatureRecordSetLayer",
-                                        "displayName": "ResultLinkPath",
+                                        "displayName": "Result: Link Path",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": {
@@ -9915,7 +9987,7 @@
                                     {
                                         "name": "StatusMessage",
                                         "dataType": "GPString",
-                                        "displayName": "StatusMessage",
+                                        "displayName": "Status Message",
                                         "description": "",
                                         "direction": "esriGPParameterDirectionOutput",
                                         "defaultValue": "",
@@ -9965,7 +10037,7 @@
                             },
                             "option": {
                                 "showHelpLink": true,
-                                "link": "https://watersgeo.epa.gov/arcgis/rest/directories/arcgisoutput/watersgp/GeoplatformUpstreamDownstreamSearchV4_GPServer/watersgp_GeoplatformUpstreamDownstreamSearchV4/SearchUsingStartingPoint.htm"
+                                "link": "https://www.epa.gov/waterdata/waters-geoviewer-tutorial#Upstream_Downstream_Search"
                             }
                         }
                     }
@@ -10000,7 +10072,7 @@
             },
             "label": "Information",
             "config": {
-                "text": "<p><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\"><img src=\"${appResourceUrl}/images/widget_53/1755351246517.png\" alt=\"\" data-name=\"1755351246517.png\">&nbsp;</span></p><p><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">First time users are encouraged to review the brief </span><a href=\"https://www.epa.gov/waterdata/waters-geoviewer-tutorial\" target=\"_blank\" data-uniqueid=\"4bcfcfc3_76ba_fbd4_ed41_24a33e1fb094\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fwaters-geoviewer-tutorial%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">tutorial</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\"> to become familiar with the WATERS GeoViewer’s layout and capabilities.</span></p><p><br></p><p><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">The EPA Office of Water’s </span><a href=\"https://www.epa.gov/waterdata/waters-watershed-assessment-tracking-environmental-results-system\" target=\"_blank\" data-uniqueid=\"f9e0c047_ea04_bbd8_a6da_187019f2d4a5\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fwaters-watershed-assessment-tracking-environmental-results-system%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">Watershed Assessment, Tracking and Environmental Results System (WATERS)</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\"> integrates water-related information by linking it to the NHDPlus stream network. The </span><a href=\"https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus\" target=\"_blank\" data-uniqueid=\"ee574ca0_4713_8071_55f9_ece9a6ee536c\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fnhdplus-national-hydrography-dataset-plus%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">National Hydrography Dataset Plus (NHDPlus)</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\"> provides the underlying geospatial hydrologic framework that supports a variety of network-based capabilities, including upstream/downstream search and watershed delineation. The WATERS GeoViewer provides easy access to these data and capabilities via the Internet on any desktop or mobile device. In doing so, it implements the concepts and principles of the </span><a href=\"https://www.usgs.gov/publications/open-water-data-initiative-water-information-a-thirsty-nation\" target=\"_blank\" data-uniqueid=\"13a34362_1093_0eac_9c72_0b5c4fdfeb04\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.usgs.gov%2Fpublications%2Fopen-water-data-initiative-water-information-a-thirsty-nation%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">Open Water Data Initiative</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">, including the </span><a href=\"https://api.water.usgs.gov/nldi/swagger-ui/index.html\" target=\"_blank\" data-uniqueid=\"daf9ef4d_4c18_a6ef_3087_47e09d099bb8\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fapi.water.usgs.gov%2Fnldi%2Fswagger-ui%2Findex.html%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">Network Linked Data Index</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">.</span></p><p><br></p><p><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">Users are welcome to </span><a href=\"https://www.epa.gov/waterdata/forms/contact-us-about-water-data-and-tools\" target=\"_blank\" data-uniqueid=\"dc6ef9a0_78b1_60f0_4e2d_1ee38ac2a822\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fforms%2Fcontact-us-about-water-data-and-tools%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">Contact Us</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\"> to ask a question, provide feedback, or report a problem.</span></p><p><br></p><p><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">To sign into ArcGIS Online or change your current ArcGIS Online affiliation, visit the </span><a href=\"https://www.arcgis.com/home/item.html?id=ada349b90c26496ea52aab66a092593b\" target=\"_blank\" data-uniqueid=\"774331f0_3026_246d_c0ed_86464541501e\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.arcgis.com%2Fhome%2Fitem.html%3Fid%3Dada349b90c26496ea52aab66a092593b%22%2C%22expression%22%3Anull%7D\" style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">WATERS GeoViewer item information page</a><span style=\"background-color: rgb(0, 0, 0); color: var(--dark);\">.</span></p>",
+                "text": "<p><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\"><img src=\"${appResourceUrl}/images/widget_53/1755351246517.png\" alt=\"\" data-name=\"1755351246517.png\">&nbsp;</span></p><p><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">First time users are encouraged to review the brief </span><a href=\"https://www.epa.gov/waterdata/waters-geoviewer-tutorial\" target=\"_blank\" data-uniqueid=\"4bcfcfc3_76ba_fbd4_ed41_24a33e1fb094\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fwaters-geoviewer-tutorial%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">tutorial</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\"> to become familiar with the WATERS GeoViewer’s layout and capabilities.</span></p><p><br></p><p><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">The EPA Office of Water’s </span><a href=\"https://www.epa.gov/waterdata/waters-watershed-assessment-tracking-environmental-results-system\" target=\"_blank\" data-uniqueid=\"f9e0c047_ea04_bbd8_a6da_187019f2d4a5\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fwaters-watershed-assessment-tracking-environmental-results-system%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">Watershed Assessment, Tracking and Environmental Results System (WATERS)</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\"> integrates water-related information by linking it to the NHDPlus stream network. The </span><a href=\"https://www.epa.gov/waterdata/nhdplus-national-hydrography-dataset-plus\" target=\"_blank\" data-uniqueid=\"ee574ca0_4713_8071_55f9_ece9a6ee536c\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fnhdplus-national-hydrography-dataset-plus%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">National Hydrography Dataset Plus (NHDPlus)</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\"> provides the underlying geospatial hydrologic framework that supports a variety of network-based capabilities, including upstream/downstream search and watershed delineation. The WATERS GeoViewer provides easy access to these data and capabilities via the Internet on any desktop or mobile device. In doing so, it implements the concepts and principles of the </span><a href=\"https://www.usgs.gov/publications/open-water-data-initiative-water-information-a-thirsty-nation\" target=\"_blank\" data-uniqueid=\"13a34362_1093_0eac_9c72_0b5c4fdfeb04\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.usgs.gov%2Fpublications%2Fopen-water-data-initiative-water-information-a-thirsty-nation%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">Open Water Data Initiative</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">, including the </span><a href=\"https://api.water.usgs.gov/nldi/swagger-ui/index.html\" target=\"_blank\" data-uniqueid=\"daf9ef4d_4c18_a6ef_3087_47e09d099bb8\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fapi.water.usgs.gov%2Fnldi%2Fswagger-ui%2Findex.html%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">Network Linked Data Index</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">.</span></p><p><br></p><p><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">Users are welcome to </span><a href=\"https://www.epa.gov/waterdata/forms/contact-us-about-water-data-and-tools\" target=\"_blank\" data-uniqueid=\"dc6ef9a0_78b1_60f0_4e2d_1ee38ac2a822\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.epa.gov%2Fwaterdata%2Fforms%2Fcontact-us-about-water-data-and-tools%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">Contact Us</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\"> to ask a question, provide feedback, or report a problem.</span></p><p><br></p><p><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">To sign into ArcGIS Online or change your current ArcGIS Online affiliation, visit the </span><a href=\"https://www.arcgis.com/home/item.html?id=3ca15d32b00947c281e35b08082474b6\" target=\"_blank\" data-uniqueid=\"604c8e2e_629e_d809_6858_df4168973a3d\" data-dsid=\"\" data-link=\"%7B%22linkType%22%3A%22WEB_ADDRESS%22%2C%22openType%22%3A%22_blank%22%2C%22value%22%3A%22https%3A%2F%2Fwww.arcgis.com%2Fhome%2Fitem.html%3Fid%3D3ca15d32b00947c281e35b08082474b6%22%2C%22expression%22%3Anull%7D\" style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">WATERS GeoViewer item information page</a><span style=\"color: var(--dark); background-color: rgb(0, 0, 0);\">.</span></p>",
                 "style": {
                     "wrap": true,
                     "color": "var(--dark)"
@@ -10157,7 +10229,7 @@
             }
         }
     },
-    "publishTimestamp": 1755632475351,
+    "publishTimestamp": 1755695959544,
     "useAutoSortInFixedLayout": true,
     "header": {
         "layout": {
@@ -11343,7 +11415,7 @@
             "orgSetting": {}
         }
     },
-    "timestamp": 1755632460363,
+    "timestamp": 1755695941426,
     "customTheme": {},
     "historyLabels": {
         "dialogs": {
