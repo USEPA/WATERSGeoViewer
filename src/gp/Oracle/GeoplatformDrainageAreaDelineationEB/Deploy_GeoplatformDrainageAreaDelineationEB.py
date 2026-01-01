@@ -78,7 +78,7 @@ ags_service_props = {
 arcpy.AddMessage("Importing the toolbox...");
 
 tb = arcpy.ImportToolbox(
-   os.path.join(projpath,'GeoplatformDrainageAreaDelineation.pyt')
+   os.path.join(projpath,'GeoplatformDrainageAreaDelineationEB.pyt')
 );
 
 #------------------------------------------------------------------------------

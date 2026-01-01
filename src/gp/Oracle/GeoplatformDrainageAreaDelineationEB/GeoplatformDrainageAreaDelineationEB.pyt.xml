@@ -6,15 +6,15 @@
 		<ArcGISFormat>1.0</ArcGISFormat>
 		<SyncOnce>TRUE</SyncOnce>
 		<ModDate>20260101</ModDate>
-		<ModTime>134245</ModTime>
+		<ModTime>145819</ModTime>
 	</Esri>
-	<toolbox name="GeoplatformDrainageAreaDelineation" alias="">
+	<toolbox name="GeoplatformDrainageAreaDelineationEB" alias="">
 		<arcToolboxHelpPath>d:\public\server\apps\arcgis\pro\Resources\Help\gp</arcToolboxHelpPath>
 		<toolsets/>
 	</toolbox>
 	<dataIdInfo>
 		<idCitation>
-			<resTitle>GeoplatformDrainageAreaDelineation</resTitle>
+			<resTitle>GeoplatformDrainageAreaDelineationEB</resTitle>
 		</idCitation>
 	</dataIdInfo>
 	<distInfo>

@@ -167,8 +167,14 @@ class DelineateUsingStartingPoint(object):
 
    def execute(self,parameters,messages):
       
-      # The Esri geoprocessing publishing process is mysterious and convoluted whereby the receiving server 
-      sde_connection = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineation\ora_rad_ags.sde";
+      # The Esri geoprocessing publishing process is mysterious and convoluted whereby the receiving server sniffs the code for data sources 
+	   # registered to the server data store.  If a match is made the server copies its own .sde file into the unpacked project directory 
+	   # updating pointers as it sees fit.  It is VERY easy to confuse the logic.  If you wish to publish this tool to ArcGIS server, 
+	   # I’ve found the best approach is to hard-code your .sde file location here.  Providing it unambiguously upfront seems the best way to 
+	   # make the publishing process happy.  If just using the tool locally in ArcGIS Pro desktop, one can ignore this pointer.  The code does  
+	   # check for the .sde file here first but will fall back the script location if not found.
+      
+      sde_connection = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ora_rad_ags.sde";
       
       #------------------------------------------------------------------------
       def strip_empty(val):
