@@ -4,6 +4,7 @@ import sys,os,uuid,json;
 class Toolbox(object):
 
    def __init__(self):
+      
       self.label = "Geoplatform Drainage Area Delineation";
       self.alias = "";
 
@@ -14,6 +15,7 @@ class Toolbox(object):
 class DelineateUsingStartingPoint(object):
 
    def __init__(self):
+      
       self.label = "Delineate Using Starting Point"
       self.name  = "DelineateUsingStartingPoint"
       self.description = "The EPA Office of Water Watershed Delineation Service provides an areal representation of the " + \
@@ -203,7 +205,11 @@ class DelineateUsingStartingPoint(object):
          elif val == "Downstream Main Path Only":
             return "DM";
          elif val == "Point to Point":
-            return "PP";
+            return "PPALL";
+         elif val == "Point to Point All Streams Between":
+            return "PPALL";
+         elif val == "Upstream with Tributaries No Minor Divergences":
+            return "UTNMD";
          elif val == "":
             return None;
          return val;
@@ -278,8 +284,8 @@ class DelineateUsingStartingPoint(object):
                str_status_message += "Maximum flow time must be a numeric value of zero or greater. ";
       
       #------------------------------------------------------------------------
-      #-- Step 50
-      #-- Unpack feature class into GeoJSON
+      #-- Step 40
+      #-- Unpack feature class
       #------------------------------------------------------------------------
       desc           = arcpy.Describe(str_start_point_fc);
       sr             = desc.spatialReference;
@@ -306,125 +312,132 @@ class DelineateUsingStartingPoint(object):
          arcpy.AddMessage(". using start location " + str(num_long) + ", " + str(num_lat) + ".");
          
       #------------------------------------------------------------------------
-      #-- Step 60
+      #-- Step 50
       #-- Create the service scratch space
       #------------------------------------------------------------------------
-      scratch_full_delin = arcpy.CreateUniqueName(
-          base_name = "ResultDelineatedArea"
-         ,workspace = arcpy.env.scratchGDB
-      );
-      arcpy.management.CreateFeatureclass(
-          out_path          = os.path.dirname(scratch_full_delin)
-         ,out_name          = os.path.basename(scratch_full_delin)
-         ,geometry_type     = "POLYGON"
-         ,has_m             = "DISABLED"
-         ,has_z             = "DISABLED"
-         ,spatial_reference = arcpy.SpatialReference(3857)
-         ,out_alias         = "Result Delineated Area"
-         ,oid_type          = "32_BIT"
-      );
-      arcpy.management.AddFields(
-          in_table          = scratch_full_delin
-         ,field_description = [
-             ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
-            ,['sourcefc'            ,'TEXT'  ,'SourceFC'                   ,20  ,None,None]
-            ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
-            ,['areasqkm'            ,'DOUBLE','Area (SqKm)'                ,None,None,None]
-          ]
-      );
+      if num_return_code == 0:
+         
+         scratch_full_delin = arcpy.CreateUniqueName(
+             base_name = "ResultDelineatedArea"
+            ,workspace = arcpy.env.scratchGDB
+         );
+         arcpy.management.CreateFeatureclass(
+             out_path          = os.path.dirname(scratch_full_delin)
+            ,out_name          = os.path.basename(scratch_full_delin)
+            ,geometry_type     = "POLYGON"
+            ,has_m             = "DISABLED"
+            ,has_z             = "DISABLED"
+            ,spatial_reference = arcpy.SpatialReference(3857)
+            ,out_alias         = "Result Delineated Area"
+            ,oid_type          = "32_BIT"
+         );
+         arcpy.management.AddFields(
+             in_table          = scratch_full_delin
+            ,field_description = [
+                ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
+               ,['sourcefc'            ,'TEXT'  ,'SourceFC'                   ,20  ,None,None]
+               ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
+               ,['areasqkm'            ,'DOUBLE','Area (SqKm)'                ,None,None,None]
+             ]
+         );
+
+         #------------------------------------------------------------------------
+         if boo_nav_results:
+            
+            scratch_full_fl = arcpy.CreateUniqueName(
+                base_name = "ResultStreamsSelected"
+               ,workspace = arcpy.env.scratchGDB
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_fl)
+               ,out_name          = os.path.basename(scratch_full_fl)
+               ,geometry_type     = "POLYLINE"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Streams Selected"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_fl
+               ,field_description = [
+                   ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
+                  ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
+                  ,['fmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
+                  ,['tmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
+                  ,['lengthkm'            ,'DOUBLE','Length (Km)'                ,None,None,None]
+                  ,['flowtimeday'         ,'DOUBLE','Flowtime (Day)'             ,None,None,None]
+                  ,['network_distancekm'  ,'DOUBLE','Network Distance (Km)'      ,None,None,None]
+                  ,['network_flowtimeday' ,'DOUBLE','Network Flowtime (Day)'     ,None,None,None]
+                  ,['levelpathi'          ,'DOUBLE','Level Path ID'              ,None,None,None]
+                  ,['terminalpa'          ,'DOUBLE','Terminal Path ID'           ,None,None,None]
+                  ,['uphydroseq'          ,'DOUBLE','Upstream HydroSeq'          ,None,None,None]
+                  ,['dnhydroseq'          ,'DOUBLE','Downstream HydroSeq'        ,None,None,None]
+                  ,['dnminorhyd'          ,'DOUBLE','Downstream Minor HydroSeq'  ,None,None,None]
+                  ,['arbolatesu'          ,'DOUBLE','Arbolate Sum'               ,None,None,None]
+                  ,['navtermination_flag' ,'LONG'  ,'Navigation Termination Flag',None,None,None]
+                  ,['nav_order'           ,'LONG'  ,'Navigation Ordering Key'    ,None,None,None]
+                ]
+            );
+         
+         #------------------------------------------------------------------------
+         if boo_catch_results:
+            
+            scratch_full_catch = arcpy.CreateUniqueName(
+                base_name = "ResultCatchmentsSelected"
+               ,workspace = arcpy.env.scratchGDB
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_catch)
+               ,out_name          = os.path.basename(scratch_full_catch)
+               ,geometry_type     = "POLYGON"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Catchments Selected"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_catch
+               ,field_description = [
+                   ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
+                  ,['sourcefc'            ,'TEXT'  ,'SourceFC'                   ,20  ,None,None]
+                  ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
+                  ,['areasqkm'            ,'DOUBLE','Area (SqKm)'                ,None,None,None]
+                ]
+            );
+         
+         #------------------------------------------------------------------------
+         scratch_full_link = arcpy.CreateUniqueName(
+             base_name = "ResultLinkPath"
+            ,workspace = arcpy.env.scratchGDB
+         );
+         arcpy.management.CreateFeatureclass(
+             out_path          = os.path.dirname(scratch_full_link)
+            ,out_name          = os.path.basename(scratch_full_link)
+            ,geometry_type     = "POLYLINE"
+            ,has_m             = "DISABLED"
+            ,has_z             = "DISABLED"
+            ,spatial_reference = arcpy.SpatialReference(3857)
+            ,out_alias         = "Result Link Path"
+            ,oid_type          = "32_BIT"
+         );
+         arcpy.management.AddFields(
+             in_table          = scratch_full_link
+            ,field_description = [
+                ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
+               ,['measure'             ,'DOUBLE','Measure'                    ,None,None,None]
+             ]
+         );
+
+         arcpy.AddMessage(". output feature classes created.");
 
       #------------------------------------------------------------------------
-      scratch_full_fl = arcpy.CreateUniqueName(
-          base_name = "ResultStreamsSelected"
-         ,workspace = arcpy.env.scratchGDB
-      );
-      arcpy.management.CreateFeatureclass(
-          out_path          = os.path.dirname(scratch_full_fl)
-         ,out_name          = os.path.basename(scratch_full_fl)
-         ,geometry_type     = "POLYLINE"
-         ,has_m             = "DISABLED"
-         ,has_z             = "DISABLED"
-         ,spatial_reference = arcpy.SpatialReference(3857)
-         ,out_alias         = "Result Streams Selected"
-         ,oid_type          = "32_BIT"
-      );
-      arcpy.management.AddFields(
-          in_table          = scratch_full_fl
-         ,field_description = [
-             ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
-            ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
-            ,['fmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
-            ,['tmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
-            ,['lengthkm'            ,'DOUBLE','Length (Km)'                ,None,None,None]
-            ,['flowtimeday'         ,'DOUBLE','Flowtime (Day)'             ,None,None,None]
-            ,['network_distancekm'  ,'DOUBLE','Network Distance (Km)'      ,None,None,None]
-            ,['network_flowtimeday' ,'DOUBLE','Network Flowtime (Day)'     ,None,None,None]
-            ,['levelpathi'          ,'DOUBLE','Level Path ID'              ,None,None,None]
-            ,['terminalpa'          ,'DOUBLE','Terminal Path ID'           ,None,None,None]
-            ,['uphydroseq'          ,'DOUBLE','Upstream HydroSeq'          ,None,None,None]
-            ,['dnhydroseq'          ,'DOUBLE','Downstream HydroSeq'        ,None,None,None]
-            ,['dnminorhyd'          ,'DOUBLE','Downstream Minor HydroSeq'  ,None,None,None]
-            ,['arbolatesu'          ,'DOUBLE','Arbolate Sum'               ,None,None,None]
-            ,['navtermination_flag' ,'LONG'  ,'Navigation Termination Flag',None,None,None]
-            ,['nav_order'           ,'LONG'  ,'Navigation Ordering Key'    ,None,None,None]
-          ]
-      );
-      
-      #------------------------------------------------------------------------
-      scratch_full_catch = arcpy.CreateUniqueName(
-          base_name = "ResultCatchmentsSelected"
-         ,workspace = arcpy.env.scratchGDB
-      );
-      arcpy.management.CreateFeatureclass(
-          out_path          = os.path.dirname(scratch_full_catch)
-         ,out_name          = os.path.basename(scratch_full_catch)
-         ,geometry_type     = "POLYGON"
-         ,has_m             = "DISABLED"
-         ,has_z             = "DISABLED"
-         ,spatial_reference = arcpy.SpatialReference(3857)
-         ,out_alias         = "Result Catchments Selected"
-         ,oid_type          = "32_BIT"
-      );
-      arcpy.management.AddFields(
-          in_table          = scratch_full_catch
-         ,field_description = [
-             ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
-            ,['sourcefc'            ,'TEXT'  ,'SourceFC'                   ,20  ,None,None]
-            ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
-            ,['areasqkm'            ,'DOUBLE','Area (SqKm)'                ,None,None,None]
-          ]
-      );
-      
-      #------------------------------------------------------------------------
-      scratch_full_link = arcpy.CreateUniqueName(
-          base_name = "ResultLinkPath"
-         ,workspace = arcpy.env.scratchGDB
-      );
-      arcpy.management.CreateFeatureclass(
-          out_path          = os.path.dirname(scratch_full_link)
-         ,out_name          = os.path.basename(scratch_full_link)
-         ,geometry_type     = "POLYLINE"
-         ,has_m             = "DISABLED"
-         ,has_z             = "DISABLED"
-         ,spatial_reference = arcpy.SpatialReference(3857)
-         ,out_alias         = "Result Link Path"
-         ,oid_type          = "32_BIT"
-      );
-      arcpy.management.AddFields(
-          in_table          = scratch_full_link
-         ,field_description = [
-             ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
-            ,['measure'             ,'DOUBLE','Measure'                    ,None,None,None]
-          ]
-      );
-
-      arcpy.AddMessage(". output feature classes created.");
-
-      #------------------------------------------------------------------------
-      #-- Step 70
+      #-- Step 60
       #-- Create the database connection
       #------------------------------------------------------------------------
       if num_return_code == 0:
+         
          try:
             sde_conn_path = sde_connection;
             sde_conn = arcpy.ArcSDESQLExecute(sde_conn_path);
@@ -448,7 +461,7 @@ class DelineateUsingStartingPoint(object):
                   raise;
 
       #------------------------------------------------------------------------
-      #-- Step 80
+      #-- Step 70
       #-- Generate the transaction id
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -664,7 +677,7 @@ class DelineateUsingStartingPoint(object):
          #arcpy.AddMessage(sql_statement1);
 
       #------------------------------------------------------------------------
-      #-- Step 90
+      #-- Step 80
       #-- Execute the Database Service
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -679,7 +692,7 @@ class DelineateUsingStartingPoint(object):
             FROM
             nhdplus_delineation.tmp_delineation_status a
             WHERE
-            a.session_id = '""" + str_session_id + """'
+            a.session_id = """ + format_string(str_session_id) + """
          """;
          
          sde_return = sde_conn.execute(sql_statement);
@@ -691,7 +704,7 @@ class DelineateUsingStartingPoint(object):
          arcpy.AddMessage(". delineation return code " + str(num_return_code) + ".");
 
       #------------------------------------------------------------------------
-      #-- Step 100
+      #-- Step 90
       #-- Push out results from the geodatabase
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -850,7 +863,7 @@ class DelineateUsingStartingPoint(object):
          arcpy.SetParameterAsText(10 ,"");
 
       #------------------------------------------------------------------------
-      #-- Step 110
+      #-- Step 100
       #-- Cough out results
       #------------------------------------------------------------------------
       if num_return_code == 0:
