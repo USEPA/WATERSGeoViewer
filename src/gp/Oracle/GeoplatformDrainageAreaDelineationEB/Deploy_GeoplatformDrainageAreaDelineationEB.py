@@ -2,6 +2,13 @@ import arcpy;
 import os,sys;
 import xml.dom.minidom as DOM;
 
+arcpy.AddMessage(" ");
+py_version = str(sys.version_info[0]) + '.' + str(sys.version_info[1]);
+arcpy.AddMessage("Using Python version " + str(py_version) + ".");
+
+arcpy_install = arcpy.GetInstallInfo();
+arcpy.AddMessage("Using arcpy version " + arcpy_install['Version'] + " with " + arcpy_install['LicenseLevel'] + " license.");
+
 #------------------------------------------------------------------------------
 # Step 10
 # Collect AGS catalog connection
@@ -85,7 +92,7 @@ tb = arcpy.ImportToolbox(
 #- Step 30
 #- Craft starting point for dry run
 #------------------------------------------------------------------------------
-sp = os.path.join(arcpy.env.scratchGDB,'Point');
+sp = os.path.join('memory','Point');
 if arcpy.Exists(sp):
    arcpy.Delete_management(sp);
    
@@ -123,6 +130,7 @@ resultFC = tb.DelineateUsingStartingPoint(
    ,MaxDistanceKm          = "15"
    ,ShowSelectedStreams    = "True"
    ,ShowSelectedCatchments = "True"
+   ,NHDPlusVersion         = "NHDPlus v2.1 Medium Resolution"
    ,AdvancedConfiguration  = ""
 );
 arcpy.AddMessage(" Success.");
@@ -181,7 +189,7 @@ Requests for complete upstream watersheds will attempt when possible to return a
    ,tags                     = draft_tags
    ,targetServer             = ags_conn     
 );
-   
+
 gpd.exportToSDDraft(
    out_sddraft          = sddraft
 );

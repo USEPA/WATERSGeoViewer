@@ -1,114 +1,322 @@
-import arcpy,os,sys;
-import builtins;
+import arcpy;
+import os,sys;
+import xml.dom.minidom as DOM;
 
-arcpy.env.overwriteOutput = True;
-###############################################################################
-g_ags = r"D:\Public\Data\WatersGeoPro\watersgeo\watersgp\ProO_GeoplatformUpstreamDownstreamV4\watersgeo1.ags";
-#g_ags = r"D:\Public\Data\WatersGeoPro\watersgeo\watersgp\ProO_GeoplatformUpstreamDownstreamV4\cat1.ags";
-
-###############################################################################
-# Step 10
-# Validate system
-###############################################################################
-project_root = os.path.dirname(os.path.realpath(__file__));
-
-print();
 py_version = str(sys.version_info[0]) + '.' + str(sys.version_info[1]);
-print("Step 10: Using Python version " + str(py_version) + ".");
-if float(py_version) < 3:
-   raise Exception("Must be using Python 3!");
-   
+arcpy.AddMessage("Using Python version " + str(py_version) + ".");
+
 arcpy_install = arcpy.GetInstallInfo();
-print("         Using arcpy version " + arcpy_install['Version'] + " with " + arcpy_install['LicenseLevel'] + " license.");
+arcpy.AddMessage("Using arcpy version " + arcpy_install['Version'] + " with " + arcpy_install['LicenseLevel'] + " license.");
+
+#------------------------------------------------------------------------------
+# Step 10
+# Collect AGS catalog connection
+#------------------------------------------------------------------------------
+#ags = 'watersgeostage.ags';
+ags = 'watersgeo.ags';
+
+#sde = 'ora_rad_ags_stg.sde';
+sde = 'ora_rad_ags.sde';
+
+arcpy.AddMessage("Verifying connections...");
+
+projpath = os.path.dirname(os.path.realpath(__file__));
+sde_conn = os.path.join(projpath,sde);
+ags_conn = os.path.join(projpath,ags);
+
+if not arcpy.Exists(sde_conn):
+   arcpy.AddMessage(". SDE Connection " + str(sde_conn) + " not found.");
+   exit(-1);
+
+arcpy.AddMessage(". Service will utilize geodatabase connection at: ");
+arcpy.AddMessage(".  " + str(sde_conn));
+
+desc = arcpy.Describe(sde_conn);
+cp = desc.connectionProperties;
+arcpy.AddMessage(". User    : " + cp.user);
+arcpy.AddMessage(". Instance: " + cp.instance);
+
+if not os.path.exists(ags_conn):
+   print(". AGS connection " + str(ags_conn) + " not found.");
+   exit(-1);
+   
+arcpy.AddMessage(". Service will be deployed to: ");
+arcpy.AddMessage(".  " + str(ags_conn));
 
 ###############################################################################
+#  Set the service parameters                                                 #
+#  This section is generally editable                                         #
+###############################################################################
+
+draft_service_name        = "GeoplatformUpstreamDownstreamSearchV4EB";
+draft_folder_name         = "watersgp";
+draft_summary             = "The Upstream/Downstream Search V4 service is designed to provide standard traversal and linked data discovery functions upon the NHDPlus stream network."
+draft_tags                = "EPA";
+draft_execution_type      = "ASynchronous";
+draft_max_records         = 1000000;
+draft_maxUsageTime        = 1200;
+draft_maxWaitTime         = 1200;
+draft_maxIdleTime         = 1800;
+draft_minInstances        = 2;
+draft_maxInstances        = 4;
+
+# Hash of any additional general properties to be applied to the sddraft file
+ags_properties = {};
+
+# Hash of services to enable or disable
+ags_services = {
+    'WPSServer': False
+};
+
+# Array of Hash of properties to be applied to individual services
+ags_service_props = {
+    'WPSServer': {'abstract': 'EPA Office of Waters WPS Services'}
+};
+
+###############################################################################                                                                            #
+# No further changes should be necessary                                      #
+###############################################################################
+
+#------------------------------------------------------------------------------
 # Step 20
-# Set AGS connection
-###############################################################################
-if not os.path.isfile(g_ags):
-   raise Exception("AGS file not found <" + g_ags + ">");
-print("Step 20: Using AGS connection file named " + os.path.basename(g_ags));
+# Import the toolbox
+#------------------------------------------------------------------------------
+arcpy.AddMessage("Importing the toolbox...");
 
-###############################################################################
-# Step 30
-# Add project path to python path and import util forcing project to aprx file
-###############################################################################
-print("Step 30: Importing project root to path:\n   " + project_root);
-sys.path.append(project_root);
+tb = arcpy.ImportToolbox(
+   os.path.join(projpath,'GeoplatformUpstreamDownstreamV4EB.pyt')
+);
 
-###############################################################################
-# Step 40
-# Short circuit the toolbox and load the util toolbox directly in order to 
-# access the parameters.  ArcPy remains a buggy mess and these contortions are
-# the only way I can test the tools without just recreating steps from scratch
-###############################################################################
-toolbx = os.path.join(project_root,"GeoplatformUpstreamDownstreamV4.pyt");
-print("Step 40: Sideloading toolbox from \n   " + toolbx);
-tb = arcpy.ImportToolbox(toolbx);
+#------------------------------------------------------------------------------
+#- Step 30
+#- Craft starting point for dry run
+#------------------------------------------------------------------------------
+sp = os.path.join('memory','Point');
+if arcpy.Exists(sp):
+   arcpy.Delete_management(sp);
+   
+arcpy.management.CreateFeatureclass(
+    out_path          = os.path.dirname(sp)
+   ,out_name          = os.path.basename(sp)
+   ,geometry_type     = "POINT"
+   ,has_m             = "DISABLED"
+   ,has_z             = "DISABLED"
+   ,spatial_reference = arcpy.SpatialReference(4269)
+   ,out_alias         = "Result Delineated Area"
+   ,oid_type          = "32_BIT"
+);
 
-###############################################################################
-# Step 50
-# Set project common variables
-###############################################################################
-__builtins__.dz_deployer = True;
+with arcpy.da.InsertCursor(
+    in_table     = sp
+   ,field_names  = [
+       'SHAPE@'
+    ]
+) as icursor:
+   
+   pt = arcpy.Point(-77.0461,38.9458);
+   shape = arcpy.PointGeometry(pt,arcpy.SpatialReference(4269));
+   icursor.insertRow((shape));
 
-print("Step 50: Dry run for Search...");
-rez = tb.SearchUsingStartingPoint(
+#------------------------------------------------------------------------------
+#- Step 40
+#- Dry run service to generate results file
+#------------------------------------------------------------------------------
+arcpy.AddMessage("Dry run for SearchUsingStartingPoint...");
+
+resultFC = tb.SearchUsingStartingPoint(
     StreamSelectionType      = "Upstream with Tributaries"
-   ,AttributeHandling        = "Separated"
-   ,ShowSelectedStreams      = False
+   ,StartingPoint            = sp
+   ,MaxDistanceKm            = "15"
+   ,SearchForTheseLinkedData = "Water Quality Portal Monitoring Data;Facilities that Discharge to Water;Fish Consumption Advisories;Facility Registry Service"
+   ,ShowSelectedStreams      = "True"
+   ,AttributeHandling        = "No Attributes"
+   ,NHDPlusVersion           = "NHDPlus v2.1 Medium Resolution"
    ,AdvancedConfiguration    = ""
 );
+arcpy.AddMessage(" Success.");
 
-###############################################################################
-# Step 60
-# Build sddraft file
-###############################################################################
-print("Step 60: Building sddraft file...");
-sd = arcpy.CreateScratchName(
-    "GeoplatformUpstreamDownstreamSearchV4"
-   ,".sd"
-   ,None
-   ,arcpy.env.scratchFolder
-);
-sd = r"D:\Public\Data\WatersGeoPro\watersgeo\watersgp\ProO_GeoplatformUpstreamDownstreamV4\z.sd";
+#------------------------------------------------------------------------------
+#- Step 50
+#- Create the sddraft file
+#------------------------------------------------------------------------------
+arcpy.AddMessage("Generating sddraft file...");
+
 sddraft = arcpy.CreateScratchName(
-    "GeoplatformUpstreamDownstreamSearchV4"
+    "GeoplatformDrainageAreaDelineationEB"
    ,".sddraft"
    ,None
    ,arcpy.env.scratchFolder
 );
-sddraft = r"D:\Public\Data\WatersGeoPro\watersgeo\watersgp\ProO_GeoplatformUpstreamDownstreamV4\z.sddraft";
-arcpy.CreateGPSDDraft(
-    result               = [rez]
-   ,out_sddraft          = sddraft
-   ,service_name         = "GeoplatformUpstreamDownstreamSearchV4"
-   ,server_type          = "ARCGIS_SERVER"
-   ,connection_file_path = g_ags
-   ,copy_data_to_server  = False
-   ,folder_name          = "watersgp"
-   ,summary              = "The Upstream/Downstream Search V4 service is designed to provide standard traversal and linked data discovery functions upon the NHDPlus stream network."
-   ,tags                 = "EPA"
-   ,executionType        = "ASynchronous"
-   ,resultMapServer      = False
-   ,showMessages         = "INFO"
-   ,maximumRecords       = 1000000
-   ,minInstances         = 1
-   ,maxInstances         = 2
-   ,maxUsageTime         = 1200
-   ,maxWaitTime          = 1200
-   ,maxIdleTime          = 1800
+arcpy.AddMessage("sddraft: " + str(sddraft));
+
+sd = arcpy.CreateScratchName(
+    "GeoplatformDrainageAreaDelineationEB"
+   ,".sd"
+   ,None
+   ,arcpy.env.scratchFolder
+);
+arcpy.AddMessage("sd: " + str(sd));
+
+gpd = arcpy.sharing.GeoprocessingSharingDraft(
+    copyDataToServer         = False
+   ,description              = """
+The Upstream/Downstream Search V4 service is designed to provide standard traversal and linked data discovery functions upon the NHDPlus stream network.
+For more information on upstream downstream search concepts, see https://watersgeo.epa.gov/openapi/waters/?sfilter=Discovery
+    """
+   ,draftValue               = [resultFC]
+   ,executionType            = draft_execution_type
+   ,maxInstances             = draft_maxInstances
+   ,maxUsageTime             = draft_maxUsageTime
+   ,maxWaitTime              = draft_maxWaitTime
+   ,maximumRecords           = draft_max_records
+   ,messageLevel             = "Info"
+   ,minInstances             = draft_minInstances
+   ,offline                  = False
+   ,offlineTarget            = 330
+   ,overwriteExistingService = True
+   ,removeDefaultValues      = [
+       'StartingPoint'
+      ,'MaxDistanceKm'
+      ,'MaxFlowtimeDay'
+      ,'SearchForTheseLinkedData'
+    ]
+   ,resultMapService         = False
+   ,serverFolder             = draft_folder_name
+   ,serverType               = "ARCGIS_SERVER"
+   ,serviceName              = draft_service_name
+   ,serviceType              = "GP_SERVICE"
+   ,summary                  = draft_summary
+   ,tags                     = draft_tags
+   ,targetServer             = ags_conn     
+);
+   
+gpd.exportToSDDraft(
+   out_sddraft          = sddraft
 );
 
-###############################################################################
-# Step 80
-# Analyze and Upload SD
-###############################################################################
-print("Step 80: Uploading sd...");
-arcpy.StageService_server(sddraft,sd);
+
+#------------------------------------------------------------------------------
+#- Step 60
+#- Analyze the SD
+#------------------------------------------------------------------------------
+arcpy.AddMessage("Analyzing service definition...");
+analysis = gpd.analyzeSDDraft();
+
+if analysis["errors"] != []:
+   print("---- ERRORS ----");
+   vars = analysis["errors"]
+   for item in vars:
+      print("    ", item[1], ' (CODE %i)' % item[0]);
+      if len(item) > 2:
+         print("       applies to:");
+         for layer in item[2]:
+            print(layer.name);
+         print(" ");
+
+if analysis["warnings"] != []:
+   print("---- WARNINGS ----");
+   vars = analysis["warnings"]
+   for item in vars:
+      print("    ", item[1], ' (CODE %i)' % item[0]);
+      if len(item) > 2:
+         print("       applies to:");
+         for layer in item[2]:
+            print(layer.name);
+         print(" ");
+         
+if analysis["messages"] != []:
+   print("---- MESSAGES ----");
+   vars = analysis["messages"]
+   for item in vars:
+      print("    ", item[1], ' (CODE %i)' % item[0]);
+      if len(item) > 2:
+         print("       applies to:");
+         for layer in item[2]:
+            print(layer.name);
+         print(" ");
+         
+if analysis['errors'] == []:
+   arcpy.AddMessage(". No errors found.");
+else:
+   print(" ");
+   print(" Service Errors must be corrected. Exiting.");
+   exit(-1);
+
+#------------------------------------------------------------------------------
+#- Step 70
+#- Alter the sddraft file 
+#------------------------------------------------------------------------------
+def soe_enable(doc,soe,value):
+   typeNames = doc.getElementsByTagName('TypeName');
    
-upStatus = arcpy.UploadServiceDefinition_server(sd,g_ags);
-print("-- Upload Deployment Complete --");
+   for typeName in typeNames:
+      if typeName.firstChild.data == soe:
+         extension = typeName.parentNode
+         for extElement in extension.childNodes:
+            if extElement.tagName == 'Enabled':
+               if value is True:
+                  extElement.firstChild.data = 'true';
+               else:
+                  extElement.firstChild.data = 'false';
+                  
+   return doc;
+   
+def srv_property(doc,property,value):
+   keys = doc.getElementsByTagName('Key')
+   for key in keys:
+      if key.hasChildNodes():
+         if key.firstChild.data == property:
+            if value is True:
+               key.nextSibling.firstChild.data = 'true';
+            elif value is False:
+               key.nextSibling.firstChild.data = 'false';
+            else:
+               key.nextSibling.firstChild.data = value
+   return doc;
 
+def soe_property(doc,soe,soeProperty,soePropertyValue):
+   typeNames = doc.getElementsByTagName('TypeName');
+   
+   for typeName in typeNames:
+       if typeName.firstChild.data == soe:
+           extension = typeName.parentNode
+           for extElement in extension.childNodes:
+               if extElement.tagName in ['Props','Info']:
+                   for propArray in extElement.childNodes:
+                       for propSet in propArray.childNodes:
+                           for prop in propSet.childNodes:
+                               if prop.tagName == "Key":
+                                   if prop.firstChild.data == soeProperty:
+                                       if prop.nextSibling.hasChildNodes():
+                                           prop.nextSibling.firstChild.data = soePropertyValue
+                                       else:
+                                           txt = doc.createTextNode(soePropertyValue)
+                                           prop.nextSibling.appendChild(txt)
+   return doc;
+   
 
+arcpy.AddMessage("Altering sddraft as needed...");       
+doc = DOM.parse(sddraft)
+for k, v in ags_properties.items():
+   doc = srv_property(doc,k,v);
+for k, v in ags_services.items():
+   doc = soe_enable(doc,k,v);
+for k, v in ags_service_props.items():
+   for k2, v2 in v.items():
+      doc = soe_property(doc,k,k2,v2);
+f = open(sddraft, 'w');
+doc.writexml(f);
+f.close();
+
+#------------------------------------------------------------------------------
+#- Step 80
+#- Generate sd file and deploy the service
+#------------------------------------------------------------------------------ 
+arcpy.AddMessage("Generating sd file..."); 
+arcpy.server.StageService(sddraft,sd);
+    
+arcpy.AddMessage("Deploying to ArcGIS Server..."); 
+arcpy.server.UploadServiceDefinition(sd,ags_conn);
+arcpy.AddMessage("Deployment Complete.");
+arcpy.AddMessage(" ");
 

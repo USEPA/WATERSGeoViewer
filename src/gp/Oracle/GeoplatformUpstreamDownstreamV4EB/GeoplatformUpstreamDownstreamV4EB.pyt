@@ -1,6 +1,8 @@
 import arcpy;
 import sys,os,uuid,json;
 
+g_workspace = arcpy.env.scratchGDB;
+
 class Toolbox(object):
 
    def __init__(self):
@@ -16,8 +18,8 @@ class SearchUsingStartingPoint(object):
 
    def __init__(self):
       
-      self.label = "SearchUsingStartingPoint"
-      self.name  = "SearchUsingStartingPoint"
+      self.label = "Search Using Starting Point";
+      self.name  = "SearchUsingStartingPoint";
       self.description = "The Upstream/Downstream Search V4 service is designed to provide standard traversal and linked data discovery functions upon the NHDPlus stream network.  " + \
          "For more information see " +  \
          "<a href='https://watersgeo.epa.gov/openapi/waters/?sfilter=Discovery' target='_blank'>" + \
@@ -25,6 +27,15 @@ class SearchUsingStartingPoint(object):
       self.canRunInBackground = False;
 
    def getParameterInfo(self):
+      
+      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultStreamsSelected.lyrx";
+      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultLinkPath.lyrx";
+      
+      projpath = os.path.dirname(os.path.realpath(__file__));
+      if not arcpy.Exists(flowl_lyrx):
+         flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
+      if not arcpy.Exists(linkp_lyrx):
+         linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
       
       param0 = arcpy.Parameter(
           displayName   = "Stream Selection Type"
@@ -83,18 +94,67 @@ class SearchUsingStartingPoint(object):
       );
       param4.value       = "Water Quality Portal Monitoring Data";
       param4.filter.type = "ValueList";
+      # ATTAINS removed as HR NHDPlus not implemented in Oracle environment
+      # "Assessment, Total Maximum Daily Load Tracking and Implementation System (ATTAINS)"
       param4.filter.list = [
-          "Assessment, Total Maximum Daily Load Tracking and Implementation System (ATTAINS)"
-         ,"Clean Watersheds Needs Survey"
+          "Clean Watersheds Needs Survey"
          ,"Fish Consumption Advisories"
          ,"Fish Tissue Data"
          ,"Facilities that Discharge to Water"
          ,"Facility Registry Service"
          ,"Water Quality Portal Monitoring Data"
-         ,"Nonpoint Source Projects"
       ];
       
       param5 = arcpy.Parameter(
+          displayName   = "Show Selected Streams"
+         ,name          = "ShowSelectedStreams"
+         ,datatype      = "GPBoolean"
+         ,parameterType = "Required"
+         ,direction     = "Input"
+         ,enabled       = True
+      );
+      param5.value = True;
+      
+      param6 = arcpy.Parameter(
+          displayName   = "Show Source Data"
+         ,name          = "ShowSourceData"
+         ,datatype      = "GPBoolean"
+         ,parameterType = "Required"
+         ,direction     = "Input"
+         ,enabled       = True
+      );
+      param6.value = False;
+      
+      param7 = arcpy.Parameter(
+          displayName   = "Attribute Handling"
+         ,name          = "AttributeHandling"
+         ,datatype      = "GPString"
+         ,parameterType = "Required"
+         ,direction     = "Input"
+         ,enabled       = True
+      );
+      param7.value       = "No Attributes";
+      param7.filter.type = "ValueList";
+      param7.filter.list = [
+          "No Attributes"
+         ,"Tabular Attributes"
+       ];
+      
+      param8 = arcpy.Parameter(
+          displayName   = "NHDPlus Version"
+         ,name          = "NHDPlusVersion"
+         ,datatype      = "GPString"
+         ,parameterType = "Required"
+         ,direction     = "Input"
+         ,enabled       = True
+      );
+      param8.value       = "NHDPlus v2.1 Medium Resolution";
+      param8.filter.type = "ValueList";
+      param8.filter.list = [
+          "NHDPlus v2.1 Medium Resolution"
+       ];
+       
+      param9 = arcpy.Parameter(
           displayName   = "Advanced Configuration"
          ,name          = "AdvancedConfiguration"
          ,datatype      = "String"
@@ -103,7 +163,7 @@ class SearchUsingStartingPoint(object):
          ,enabled       = True
       );
 
-      param6 = arcpy.Parameter(
+      param10 = arcpy.Parameter(
           displayName   = "Result Source Point Linked Data"
          ,name          = "ResultSourcePointLinkedData"
          ,datatype      = ["DEFeatureClass","GPString"]
@@ -111,15 +171,15 @@ class SearchUsingStartingPoint(object):
          ,direction     = "Output"
       );
       
-      param7 = arcpy.Parameter(
+      param11 = arcpy.Parameter(
           displayName   = "Result Source Linear Linked Data"
          ,name          = "ResultSourceLinearLinkedData"
-         ,datatype      = "DEFeatureClass"
-         ,parameterType = ["DEFeatureClass","GPString"]
+         ,datatype      = ["DEFeatureClass","GPString"]
+         ,parameterType = "Derived"
          ,direction     = "Output"
       );
 
-      param8 = arcpy.Parameter(
+      param12 = arcpy.Parameter(
           displayName   = "Result Source Area Linked Data"
          ,name          = "ResultSourceAreaLinkedData"
          ,datatype      = ["DEFeatureClass","GPString"]
@@ -127,7 +187,7 @@ class SearchUsingStartingPoint(object):
          ,direction     = "Output"
       );
       
-      param9 = arcpy.Parameter(
+      param13 = arcpy.Parameter(
           displayName   = "Result Reached Point Linked Data"
          ,name          = "ResultReachedPointLinkedData"
          ,datatype      = ["DEFeatureClass","GPString"]
@@ -135,7 +195,7 @@ class SearchUsingStartingPoint(object):
          ,direction     = "Output"
       );
       
-      param10 = arcpy.Parameter(
+      param14 = arcpy.Parameter(
           displayName   = "Result Reached Linear Linked Data"
          ,name          = "ResultReachedLinearLinkedData"
          ,datatype      = ["DEFeatureClass","GPString"]
@@ -143,7 +203,7 @@ class SearchUsingStartingPoint(object):
          ,direction     = "Output"
       );
 
-      param11 = arcpy.Parameter(
+      param15 = arcpy.Parameter(
           displayName   = "Result Reached Area Linked Data"
          ,name          = "ResultReachedAreaLinkedData"
          ,datatype      = ["DEFeatureClass","GPString"]
@@ -151,23 +211,49 @@ class SearchUsingStartingPoint(object):
          ,direction     = "Output"
       );
 
-      param12 = arcpy.Parameter(
+      param16 = arcpy.Parameter(
           displayName   = "Result Streams Selected"
          ,name          = "ResultStreamsSelected"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param16.symbology = flowl_lyrx;
       
-      param13 = arcpy.Parameter(
+      param17 = arcpy.Parameter(
+          displayName   = "Result FRSPUB Attributes"
+         ,name          = "ResultFRSPUBAttributes"
+         ,datatype      = ["DETable","GPString"]
+         ,parameterType = "Derived"
+         ,direction     = "Output"
+      );
+      
+      param18 = arcpy.Parameter(
+          displayName   = "Result NPDES Attributes"
+         ,name          = "ResultNPDESAttributes"
+         ,datatype      = ["DETable","GPString"]
+         ,parameterType = "Derived"
+         ,direction     = "Output"
+      );
+      
+      param19 = arcpy.Parameter(
+          displayName   = "Result WQP Attributes"
+         ,name          = "ResultWQPAttributes"
+         ,datatype      = ["DETable","GPString"]
+         ,parameterType = "Derived"
+         ,direction     = "Output"
+      );
+      
+      param20 = arcpy.Parameter(
           displayName   = "Result Link Path"
          ,name          = "ResultLinkPath"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param20.symbology = linkp_lyrx;
       
-      param14 = arcpy.Parameter(
+      param21 = arcpy.Parameter(
           displayName   = "Status Message"
          ,name          = "StatusMessage"
          ,datatype      = "GPString"
@@ -191,6 +277,13 @@ class SearchUsingStartingPoint(object):
          ,param12
          ,param13
          ,param14
+         ,param15
+         ,param16
+         ,param17
+         ,param18
+         ,param19
+         ,param20
+         ,param21
       ];
 
       return params
@@ -281,7 +374,33 @@ class SearchUsingStartingPoint(object):
          if tmp is None or tmp == "MDSYS.SDO_STRING2_ARRAY()":
             tmp = "NULL";
 
-         return tmp;
+         return (tmp,ary_tmp);
+         
+      #------------------------------------------------------------------------
+      def name2eventtype(input):
+
+         if input == "Assessment, Total Maximum Daily Load Tracking and Implementation System (ATTAINS)":
+            return 10033;
+            
+         elif input == "Clean Watersheds Needs Survey":
+            return 10006;
+            
+         elif input == "Fish Consumption Advisories":
+            return 10009;
+            
+         elif input == "Fish Tissue Data":
+            return 10010;
+            
+         elif input == "Facilities that Discharge to Water":
+            return 10015;
+            
+         elif input == "Facility Registry Service":
+            return 10028;
+            
+         elif input == "Water Quality Portal Monitoring Data":
+            return 10032;
+            
+         return input;
    
       #------------------------------------------------------------------------
       #-- Step 10
@@ -290,12 +409,17 @@ class SearchUsingStartingPoint(object):
       num_return_code      = 0;
       str_status_message   = "";
 
-      str_search_type     = search_type(parameters[0].valueAsText);
-      str_start_point_fc  = strip_empty(parameters[1].valueAsText);
-      str_max_distancekm  = strip_empty(parameters[2].value);
-      str_max_flowtimeday = strip_empty(parameters[3].value);
-      str_eventtypelist   = to_eventtype(parameters[4].valueAsText);
-      str_advanced_config = strip_empty(parameters[5].valueAsText);
+      str_search_type        = search_type(parameters[0].valueAsText);
+      str_start_point_fc     = strip_empty(parameters[1].valueAsText);
+      str_max_distancekm     = strip_empty(parameters[2].value);
+      str_max_flowtimeday    = strip_empty(parameters[3].value);
+      (str_eventtypelist,ary_eventtypelist) = to_eventtype(parameters[4].valueAsText);
+      boo_nav_results        = get_boo(parameters[5].valueAsText);
+      boo_show_source        = get_boo(parameters[6].valueAsText);
+      str_attribute_handling = strip_empty(parameters[7].valueAsText);
+      str_nhdplus_version    = strip_empty(parameters[8].valueAsText);
+      str_advanced_config    = strip_empty(parameters[9].valueAsText);
+      #arcpy.AddMessage(str(ary_eventtypelist));
       
       #------------------------------------------------------------------------
       #-- Step 20
@@ -346,6 +470,14 @@ class SearchUsingStartingPoint(object):
             if boo_bad or num_val < 0:
                num_return_code = -10;
                str_status_message += "Maximum flow time must be a numeric value of zero or greater. ";
+ 
+      if str_attribute_handling == 'No Attributes':
+         boo_attributes = False;
+      elif str_attribute_handling == 'Tabular Attributes':
+         boo_attributes = True;
+      else:
+         num_return_code = -11;
+         str_status_message += "Unknown attribute handling keyword: "+ str(str_attribute_handling);
                
       #------------------------------------------------------------------------
       #-- Step 40
@@ -401,209 +533,228 @@ class SearchUsingStartingPoint(object):
       if num_return_code == 0:
          
          #------------------------------------------------------------------------
-         scratch_full_source_a = arcpy.CreateUniqueName(
-             basename  = "ResultSourceAreaLinkedData"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_source_a)
-            ,out_name          = os.path.basename(scratch_full_source_a)
-            ,geometry_type     = "POLYGON"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Source Area Linked Data"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_source_a
-            ,field_description = [
-                ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
-               ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
-               ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
-               ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
-               ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
-               ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
-               ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
-               ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
-               ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
-               ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
-               ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
-               ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
-               ,['areasqkm'                   ,'DOUBLE','Area (SqKm)'                   ,None,None,None]
-               ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
-               ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
-             ]
-         );
+         if boo_show_source:
+            if 10006 in ary_eventtypelist \
+            or 10009 in ary_eventtypelist \
+            or 10010 in ary_eventtypelist :        
+            
+               scratch_full_source_a = arcpy.CreateUniqueName(
+                   base_name  = "ResultSourceAreaLinkedData"
+                  ,workspace  = g_workspace
+               );
+               arcpy.management.CreateFeatureclass(
+                   out_path          = os.path.dirname(scratch_full_source_a)
+                  ,out_name          = os.path.basename(scratch_full_source_a)
+                  ,geometry_type     = "POLYGON"
+                  ,has_m             = "DISABLED"
+                  ,has_z             = "DISABLED"
+                  ,spatial_reference = arcpy.SpatialReference(3857)
+                  ,out_alias         = "Result Source Area Linked Data"
+                  ,oid_type          = "32_BIT"
+               );
+               arcpy.management.AddFields(
+                   in_table          = scratch_full_source_a
+                  ,field_description = [
+                      ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
+                     ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
+                     ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
+                     ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
+                     ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
+                     ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
+                     ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
+                     ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
+                     ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
+                     ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
+                     ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
+                     ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
+                     ,['areasqkm'                   ,'DOUBLE','Area (SqKm)'                   ,None,None,None]
+                     ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
+                     ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
+                   ]
+               );
 
          #------------------------------------------------------------------------
-         scratch_full_source_l = arcpy.CreateUniqueName(
-             basename  = "ResultSourceLinearLinkedData"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_source_l)
-            ,out_name          = os.path.basename(scratch_full_source_l)
-            ,geometry_type     = "POLYLINE"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Source Linear Linked Data"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_source_l
-            ,field_description = [
-                ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
-               ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
-               ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
-               ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
-               ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
-               ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
-               ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
-               ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
-               ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
-               ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
-               ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
-               ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
-               ,['lengthkm'                   ,'DOUBLE','Length (Km)'                   ,None,None,None]
-               ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
-               ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
-             ]
-         );
+         if boo_show_source:
+            if 10006 in ary_eventtypelist \
+            or 10009 in ary_eventtypelist \
+            or 10010 in ary_eventtypelist : 
+               
+               scratch_full_source_l = arcpy.CreateUniqueName(
+                   base_name  = "ResultSourceLinearLinkedData"
+                  ,workspace  = g_workspace
+               );
+               arcpy.management.CreateFeatureclass(
+                   out_path          = os.path.dirname(scratch_full_source_l)
+                  ,out_name          = os.path.basename(scratch_full_source_l)
+                  ,geometry_type     = "POLYLINE"
+                  ,has_m             = "DISABLED"
+                  ,has_z             = "DISABLED"
+                  ,spatial_reference = arcpy.SpatialReference(3857)
+                  ,out_alias         = "Result Source Linear Linked Data"
+                  ,oid_type          = "32_BIT"
+               );
+               arcpy.management.AddFields(
+                   in_table          = scratch_full_source_l
+                  ,field_description = [
+                      ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
+                     ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
+                     ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
+                     ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
+                     ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
+                     ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
+                     ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
+                     ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
+                     ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
+                     ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
+                     ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
+                     ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
+                     ,['lengthkm'                   ,'DOUBLE','Length (Km)'                   ,None,None,None]
+                     ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
+                     ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
+                   ]
+               );
 
          #------------------------------------------------------------------------
-         scratch_full_source_p = arcpy.CreateUniqueName(
-             basename  = "ResultSourcePointLinkedData"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_source_p)
-            ,out_name          = os.path.basename(scratch_full_source_p)
-            ,geometry_type     = "POINT"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Source Point Linked Data"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_source_p
-            ,field_description = [
-                ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
-               ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
-               ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
-               ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
-               ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
-               ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
-               ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
-               ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
-               ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
-               ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
-               ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
-               ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
-               ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
-               ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
-             ]
-         );
+         if boo_show_source:
+            scratch_full_source_p = arcpy.CreateUniqueName(
+                base_name  = "ResultSourcePointLinkedData"
+               ,workspace  = g_workspace
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_source_p)
+               ,out_name          = os.path.basename(scratch_full_source_p)
+               ,geometry_type     = "POINT"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Source Point Linked Data"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_source_p
+               ,field_description = [
+                   ['eventtype'                  ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
+                  ,['program_name'               ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
+                  ,['permid_joinkey'             ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
+                  ,['source_originator'          ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
+                  ,['source_featureid'           ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
+                  ,['source_featureid2'          ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
+                  ,['source_series'              ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
+                  ,['source_subdivision'         ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
+                  ,['source_joinkey'             ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
+                  ,['start_date'                 ,'DATE'  ,'Start Date'                    ,None,None,None]
+                  ,['end_date'                   ,'DATE'  ,'End Date'                      ,None,None,None]
+                  ,['featuredetailurl'           ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
+                  ,['nearest_network_distancekm' ,'DOUBLE','Nearest Network Distance (Km)' ,None,None,None]
+                  ,['nearest_network_flowtimeday','DOUBLE','Nearest Network Flowtime (Day)',None,None,None]
+                ]
+            );
          
          #------------------------------------------------------------------------
-         scratch_full_reached_a = arcpy.CreateUniqueName(
-             basename  = "ResultReachedAreaLinkedData"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_reached_a)
-            ,out_name          = os.path.basename(scratch_full_reached_a)
-            ,geometry_type     = "POLYGON"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Reached Area Linked Data"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_reached_a
-            ,field_description = [
-                ['eventtype'                   ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
-               ,['program_name'                ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
-               ,['permanent_identifier'        ,'TEXT'  ,'Permanent Identifier'          ,40  ,None,None]
-               ,['permid_joinkey'              ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
-               ,['eventdate'                   ,'DATE'  ,'Event Date'                    ,None,None,None]
-               ,['reachcode'                   ,'TEXT'  ,'Reach Code'                    ,14  ,None,None]
-               ,['reachsmdate'                 ,'DATE'  ,'Reach SMDate'                  ,None,None,None]
-               ,['reachresolution'             ,'LONG'  ,'Reach Resolution'              ,None,None,None]
-               ,['feature_permanent_identifier','TEXT'  ,'Feature Permanent Identifier'  ,40  ,None,None]
-               ,['featureclassref'             ,'LONG'  ,'Feature Class Reference'       ,None,None,None]
-               ,['source_originator'           ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
-               ,['source_featureid'            ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
-               ,['source_featureid2'           ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
-               ,['source_datadesc'             ,'TEXT'  ,'Source Data Description'       ,100 ,None,None]
-               ,['source_series'               ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
-               ,['source_subdivision'          ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
-               ,['source_joinkey'              ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
-               ,['start_date'                  ,'DATE'  ,'Start Date'                    ,None,None,None]
-               ,['end_date'                    ,'DATE'  ,'End Date'                      ,None,None,None]
-               ,['featuredetailurl'            ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
-               ,['event_areasqkm'              ,'DOUBLE','Event Area (SqKm)'             ,None,None,None]
-               ,['geogstate'                   ,'TEXT'  ,'Event Geographic State'        ,2   ,None,None]
-               ,['network_distancekm'          ,'DOUBLE','Network Distance (Km)'         ,None,None,None]
-               ,['network_flowtimeday'         ,'DOUBLE','Network Flowtime (Day)'        ,None,None,None]
-             ]
-         );
+         if 10006 in ary_eventtypelist \
+         or 10009 in ary_eventtypelist \
+         or 10010 in ary_eventtypelist : 
+         
+            scratch_full_reached_a = arcpy.CreateUniqueName(
+                base_name  = "ResultReachedAreaLinkedData"
+               ,workspace  = g_workspace
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_reached_a)
+               ,out_name          = os.path.basename(scratch_full_reached_a)
+               ,geometry_type     = "POLYGON"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Reached Area Linked Data"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_reached_a
+               ,field_description = [
+                   ['eventtype'                   ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
+                  ,['program_name'                ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
+                  ,['permanent_identifier'        ,'TEXT'  ,'Permanent Identifier'          ,40  ,None,None]
+                  ,['permid_joinkey'              ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
+                  ,['eventdate'                   ,'DATE'  ,'Event Date'                    ,None,None,None]
+                  ,['reachcode'                   ,'TEXT'  ,'Reach Code'                    ,14  ,None,None]
+                  ,['reachsmdate'                 ,'DATE'  ,'Reach SMDate'                  ,None,None,None]
+                  ,['reachresolution'             ,'LONG'  ,'Reach Resolution'              ,None,None,None]
+                  ,['feature_permanent_identifier','TEXT'  ,'Feature Permanent Identifier'  ,40  ,None,None]
+                  ,['featureclassref'             ,'LONG'  ,'Feature Class Reference'       ,None,None,None]
+                  ,['source_originator'           ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
+                  ,['source_featureid'            ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
+                  ,['source_featureid2'           ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
+                  ,['source_datadesc'             ,'TEXT'  ,'Source Data Description'       ,100 ,None,None]
+                  ,['source_series'               ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
+                  ,['source_subdivision'          ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
+                  ,['source_joinkey'              ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
+                  ,['start_date'                  ,'DATE'  ,'Start Date'                    ,None,None,None]
+                  ,['end_date'                    ,'DATE'  ,'End Date'                      ,None,None,None]
+                  ,['featuredetailurl'            ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
+                  ,['event_areasqkm'              ,'DOUBLE','Event Area (SqKm)'             ,None,None,None]
+                  ,['geogstate'                   ,'TEXT'  ,'Event Geographic State'        ,2   ,None,None]
+                  ,['network_distancekm'          ,'DOUBLE','Network Distance (Km)'         ,None,None,None]
+                  ,['network_flowtimeday'         ,'DOUBLE','Network Flowtime (Day)'        ,None,None,None]
+                ]
+            );
 
          #------------------------------------------------------------------------
-         scratch_full_reached_l = arcpy.CreateUniqueName(
-             basename  = "ResultReachedLinearLinkedData"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_reached_l)
-            ,out_name          = os.path.basename(scratch_full_reached_l)
-            ,geometry_type     = "POLYLINE"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Reached Linear Linked Data"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_reached_l
-            ,field_description = [
-                ['eventtype'                   ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
-               ,['program_name'                ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
-               ,['permanent_identifier'        ,'TEXT'  ,'Permanent Identifier'          ,40  ,None,None]
-               ,['permid_joinkey'              ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
-               ,['eventdate'                   ,'DATE'  ,'Event Date'                    ,None,None,None]
-               ,['reachcode'                   ,'TEXT'  ,'Reach Code'                    ,14  ,None,None]
-               ,['reachsmdate'                 ,'DATE'  ,'Reach SMDate'                  ,None,None,None]
-               ,['reachresolution'             ,'LONG'  ,'Reach Resolution'              ,None,None,None]
-               ,['feature_permanent_identifier','TEXT'  ,'Feature Permanent Identifier'  ,40  ,None,None]
-               ,['featureclassref'             ,'LONG'  ,'Feature Class Reference'       ,None,None,None]
-               ,['source_originator'           ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
-               ,['source_featureid'            ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
-               ,['source_featureid2'           ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
-               ,['source_datadesc'             ,'TEXT'  ,'Source Data Description'       ,100 ,None,None]
-               ,['source_series'               ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
-               ,['source_subdivision'          ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
-               ,['source_joinkey'              ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
-               ,['start_date'                  ,'DATE'  ,'Start Date'                    ,None,None,None]
-               ,['end_date'                    ,'DATE'  ,'End Date'                      ,None,None,None]
-               ,['featuredetailurl'            ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
-               ,['fmeasure'                    ,'DOUBLE','From Measure'                  ,None,None,None]
-               ,['tmeasure'                    ,'DOUBLE','To Measure'                    ,None,None,None]
-               ,['eventoffset'                 ,'DOUBLE','Event Offset'                  ,None,None,None]
-               ,['event_lengthkm'              ,'DOUBLE','Event Length (Km)'             ,None,None,None]
-               ,['geogstate'                   ,'TEXT'  ,'Event Geographic State'        ,2   ,None,None]
-               ,['network_distancekm'          ,'DOUBLE','Network Distance (Km)'         ,None,None,None]
-               ,['network_flowtimeday'         ,'DOUBLE','Network Flowtime (Day)'        ,None,None,None]
-             ]
-         );
+         if 10006 in ary_eventtypelist \
+         or 10009 in ary_eventtypelist \
+         or 10010 in ary_eventtypelist : 
+            
+            scratch_full_reached_l = arcpy.CreateUniqueName(
+                base_name  = "ResultReachedLinearLinkedData"
+               ,workspace  = g_workspace
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_reached_l)
+               ,out_name          = os.path.basename(scratch_full_reached_l)
+               ,geometry_type     = "POLYLINE"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Reached Linear Linked Data"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_reached_l
+               ,field_description = [
+                   ['eventtype'                   ,'LONG'  ,'Event Type Program Code'       ,None,None,None]
+                  ,['program_name'                ,'TEXT'  ,'Program Name'                  ,255 ,None,None]
+                  ,['permanent_identifier'        ,'TEXT'  ,'Permanent Identifier'          ,40  ,None,None]
+                  ,['permid_joinkey'              ,'TEXT'  ,'Permanent Identifier JoinKey'  ,40  ,None,None]
+                  ,['eventdate'                   ,'DATE'  ,'Event Date'                    ,None,None,None]
+                  ,['reachcode'                   ,'TEXT'  ,'Reach Code'                    ,14  ,None,None]
+                  ,['reachsmdate'                 ,'DATE'  ,'Reach SMDate'                  ,None,None,None]
+                  ,['reachresolution'             ,'LONG'  ,'Reach Resolution'              ,None,None,None]
+                  ,['feature_permanent_identifier','TEXT'  ,'Feature Permanent Identifier'  ,40  ,None,None]
+                  ,['featureclassref'             ,'LONG'  ,'Feature Class Reference'       ,None,None,None]
+                  ,['source_originator'           ,'TEXT'  ,'Source Originator'             ,130 ,None,None]
+                  ,['source_featureid'            ,'TEXT'  ,'Source Feature ID'             ,100 ,None,None]
+                  ,['source_featureid2'           ,'TEXT'  ,'Source Feature ID 2'           ,100 ,None,None]
+                  ,['source_datadesc'             ,'TEXT'  ,'Source Data Description'       ,100 ,None,None]
+                  ,['source_series'               ,'TEXT'  ,'Source Series'                 ,100 ,None,None]
+                  ,['source_subdivision'          ,'TEXT'  ,'Source Subdivision'            ,100 ,None,None]
+                  ,['source_joinkey'              ,'TEXT'  ,'Source JoinKey'                ,40  ,None,None]
+                  ,['start_date'                  ,'DATE'  ,'Start Date'                    ,None,None,None]
+                  ,['end_date'                    ,'DATE'  ,'End Date'                      ,None,None,None]
+                  ,['featuredetailurl'            ,'TEXT'  ,'Feature Detail URL'            ,255 ,None,None]
+                  ,['fmeasure'                    ,'DOUBLE','From Measure'                  ,None,None,None]
+                  ,['tmeasure'                    ,'DOUBLE','To Measure'                    ,None,None,None]
+                  ,['eventoffset'                 ,'DOUBLE','Event Offset'                  ,None,None,None]
+                  ,['event_lengthkm'              ,'DOUBLE','Event Length (Km)'             ,None,None,None]
+                  ,['geogstate'                   ,'TEXT'  ,'Event Geographic State'        ,2   ,None,None]
+                  ,['network_distancekm'          ,'DOUBLE','Network Distance (Km)'         ,None,None,None]
+                  ,['network_flowtimeday'         ,'DOUBLE','Network Flowtime (Day)'        ,None,None,None]
+                ]
+            );
 
          #------------------------------------------------------------------------
          scratch_full_reached_p = arcpy.CreateUniqueName(
-             basename  = "ResultReachedPointLinkedData"
-            ,workspace = arcpy.env.scratchGDB
+             base_name  = "ResultReachedPointLinkedData"
+            ,workspace  = g_workspace
          );
          arcpy.management.CreateFeatureclass(
              out_path          = os.path.dirname(scratch_full_reached_p)
@@ -647,46 +798,183 @@ class SearchUsingStartingPoint(object):
          );
 
          #------------------------------------------------------------------------
-         scratch_full_nav = arcpy.CreateUniqueName(
-             basename  = "ResultStreamsSelected"
-            ,workspace = arcpy.env.scratchGDB
-         );
-         arcpy.management.CreateFeatureclass(
-             out_path          = os.path.dirname(scratch_full_nav)
-            ,out_name          = os.path.basename(scratch_full_nav)
-            ,geometry_type     = "POLYLINE"
-            ,has_m             = "DISABLED"
-            ,has_z             = "DISABLED"
-            ,spatial_reference = arcpy.SpatialReference(3857)
-            ,out_alias         = "Result Streams Selected"
-            ,oid_type          = "32_BIT"
-         );
-         arcpy.management.AddFields(
-             in_table          = scratch_full_nav
-            ,field_description = [
-                ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
-               ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
-               ,['fmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
-               ,['tmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
-               ,['lengthkm'            ,'DOUBLE','Length (Km)'                ,None,None,None]
-               ,['flowtimeday'         ,'DOUBLE','Flowtime (Day)'             ,None,None,None]
-               ,['network_distancekm'  ,'DOUBLE','Network Distance (Km)'      ,None,None,None]
-               ,['network_flowtimeday' ,'DOUBLE','Network Flowtime (Day)'     ,None,None,None]
-               ,['levelpathi'          ,'DOUBLE','Level Path ID'              ,None,None,None]
-               ,['terminalpa'          ,'DOUBLE','Terminal Path ID'           ,None,None,None]
-               ,['uphydroseq'          ,'DOUBLE','Upstream HydroSeq'          ,None,None,None]
-               ,['dnhydroseq'          ,'DOUBLE','Downstream HydroSeq'        ,None,None,None]
-               ,['dnminorhyd'          ,'DOUBLE','Downstream Minor HydroSeq'  ,None,None,None]
-               ,['arbolatesu'          ,'DOUBLE','Arbolate Sum'               ,None,None,None]
-               ,['navtermination_flag' ,'LONG'  ,'Navigation Termination Flag',None,None,None]
-               ,['nav_order'           ,'LONG'  ,'Navigation Ordering Key'    ,None,None,None]
-             ]
-         );
+         if boo_nav_results:
+            
+            scratch_full_fl = arcpy.CreateUniqueName(
+                base_name  = "ResultStreamsSelected"
+               ,workspace  = g_workspace
+            );
+            arcpy.management.CreateFeatureclass(
+                out_path          = os.path.dirname(scratch_full_fl)
+               ,out_name          = os.path.basename(scratch_full_fl)
+               ,geometry_type     = "POLYLINE"
+               ,has_m             = "DISABLED"
+               ,has_z             = "DISABLED"
+               ,spatial_reference = arcpy.SpatialReference(3857)
+               ,out_alias         = "Result Streams Selected"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_full_fl
+               ,field_description = [
+                   ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
+                  ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
+                  ,['fmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
+                  ,['tmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
+                  ,['lengthkm'            ,'DOUBLE','Length (Km)'                ,None,None,None]
+                  ,['flowtimeday'         ,'DOUBLE','Flowtime (Day)'             ,None,None,None]
+                  ,['network_distancekm'  ,'DOUBLE','Network Distance (Km)'      ,None,None,None]
+                  ,['network_flowtimeday' ,'DOUBLE','Network Flowtime (Day)'     ,None,None,None]
+                  ,['levelpathi'          ,'DOUBLE','Level Path ID'              ,None,None,None]
+                  ,['terminalpa'          ,'DOUBLE','Terminal Path ID'           ,None,None,None]
+                  ,['uphydroseq'          ,'DOUBLE','Upstream HydroSeq'          ,None,None,None]
+                  ,['dnhydroseq'          ,'DOUBLE','Downstream HydroSeq'        ,None,None,None]
+                  ,['dnminorhyd'          ,'DOUBLE','Downstream Minor HydroSeq'  ,None,None,None]
+                  ,['arbolatesu'          ,'DOUBLE','Arbolate Sum'               ,None,None,None]
+                  ,['navtermination_flag' ,'LONG'  ,'Navigation Termination Flag',None,None,None]
+                  ,['nav_order'           ,'LONG'  ,'Navigation Ordering Key'    ,None,None,None]
+                ]
+            );
+            
+         #------------------------------------------------------------------------
+         if boo_attributes and 10028 in ary_eventtypelist:
+            
+            scratch_frspub_attr = arcpy.CreateUniqueName(
+                base_name  = "ResultFRSPUBAttributes"
+               ,workspace = g_workspace
+            );
+            arcpy.management.CreateTable(
+                out_path          = os.path.dirname(scratch_frspub_attr)
+               ,out_name          = os.path.basename(scratch_frspub_attr)
+               ,out_alias         = "Result FRSPUB Attributes"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_frspub_attr
+               ,field_description = [
+                   ['source_joinkey'                ,'TEXT'  ,'Source JoinKey'                          ,40  ,None,None]
+                  ,['registry_id'                   ,'TEXT'  ,'Registry ID'                             ,50  ,None,None]
+                  ,['primary_name'                  ,'TEXT'  ,'Primary Name'                            ,240 ,None,None]
+                  ,['city_name'                     ,'TEXT'  ,'City Name'                               ,180 ,None,None]
+                  ,['county_name'                   ,'TEXT'  ,'County Name'                             ,105 ,None,None]
+                  ,['fips_code'                     ,'TEXT'  ,'FIPS Code'                               ,15  ,None,None]
+                  ,['state_code'                    ,'TEXT'  ,'State Code'                              ,15  ,None,None]
+                  ,['state_name'                    ,'TEXT'  ,'State Name'                              ,105 ,None,None]
+                  ,['country_name'                  ,'TEXT'  ,'Country Name'                            ,132 ,None,None]
+                  ,['postal_code'                   ,'TEXT'  ,'Postal Code'                             ,42  ,None,None]
+                  ,['tribal_land_code'              ,'TEXT'  ,'Tribal Land Code'                        ,3   ,None,None]
+                  ,['tribal_land_name'              ,'TEXT'  ,'Tribal Land Name'                        ,600 ,None,None]
+                  ,['us_mexico_border_ind'          ,'TEXT'  ,'US/Mexico Border Indicator'              ,1   ,None,None]
+                  ,['pgm_sys_id'                    ,'TEXT'  ,'Program System Identifier'               ,30  ,None,None]
+                  ,['pgm_sys_acrnm'                 ,'TEXT'  ,'Program System Acronym'                  ,15  ,None,None]
+                  ,['nearest_cip_network_distancekm','DOUBLE','Nearest CIP Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_cip_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                  ,['nearest_rad_network_distancekm','DOUBLE','Nearest RAD Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_rad_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                ]
+            );
          
          #------------------------------------------------------------------------
+         if boo_attributes and 10015 in ary_eventtypelist:
+            
+            scratch_npdes_attr = arcpy.CreateUniqueName(
+                base_name  = "ResultNPDESAttributes"
+               ,workspace = g_workspace
+            );
+            arcpy.management.CreateTable(
+                out_path          = os.path.dirname(scratch_npdes_attr)
+               ,out_name          = os.path.basename(scratch_npdes_attr)
+               ,out_alias         = "Result NPDES Attributes"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_npdes_attr
+               ,field_description = [
+                   ['source_joinkey'                ,'TEXT'  ,'Source JoinKey'                          ,40  ,None,None]
+                  ,['external_permit_nmbr'          ,'TEXT'  ,'External Permit Number'                  ,9   ,None,None]
+                  ,['permit_name'                   ,'TEXT'  ,'Permit Name'                             ,120 ,None,None]
+                  ,['registry_id'                   ,'TEXT'  ,'Registry ID'                             ,12  ,None,None]
+                  ,['primary_name'                  ,'TEXT'  ,'Primary Name'                            ,150 ,None,None]
+                  ,['state_code'                    ,'TEXT'  ,'State Code'                              ,5   ,None,None]
+                  ,['agency_type_code'              ,'TEXT'  ,'Agency Type Code'                        ,3   ,None,None]
+                  ,['issue_date'                    ,'DATE'  ,'Issue Date'                              ,None,None,None]
+                  ,['issuing_agency'                ,'TEXT'  ,'Issuing Agency'                          ,100 ,None,None]
+                  ,['original_issue_date'           ,'DATE'  ,'Original Issue Date'                     ,None,None,None]
+                  ,['permit_status_code'            ,'TEXT'  ,'Permit Status Code'                      ,3   ,None,None]
+                  ,['permit_type_code'              ,'TEXT'  ,'Permit Type Code'                        ,3   ,None,None]
+                  ,['retirement_date'               ,'DATE'  ,'Retirement Date'                         ,None,None,None]
+                  ,['termination_date'              ,'DATE'  ,'Termination Date'                        ,None,None,None]
+                  ,['nearest_cip_network_distancekm','DOUBLE','Nearest CIP Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_cip_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                  ,['nearest_rad_network_distancekm','DOUBLE','Nearest RAD Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_rad_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                ]
+            );
+            
+         #------------------------------------------------------------------------
+         if boo_attributes and 10032 in ary_eventtypelist:
+            
+            scratch_wqp_attr = arcpy.CreateUniqueName(
+                base_name  = "ResultWQPAttributes"
+               ,workspace = g_workspace
+            );
+            arcpy.management.CreateTable(
+                out_path          = os.path.dirname(scratch_wqp_attr)
+               ,out_name          = os.path.basename(scratch_wqp_attr)
+               ,out_alias         = "Result WQP Attributes"
+               ,oid_type          = "32_BIT"
+            );
+            arcpy.management.AddFields(
+                in_table          = scratch_wqp_attr
+               ,field_description = [
+                   ['source_joinkey'                ,'TEXT'  ,'Source JoinKey'                          ,40  ,None,None]
+                  ,['organizationidentifier'        ,'TEXT'  ,'Organization Identifier'                 ,256 ,None,None]
+                  ,['organizationformalname'        ,'TEXT'  ,'Organization Formal Name'                ,256 ,None,None]
+                  ,['monitoringlocationidentifier'  ,'TEXT'  ,'Monitoring Location Identifier'          ,256 ,None,None]
+                  ,['monitoringlocationname'        ,'TEXT'  ,'Monitoring Location Name'                ,768 ,None,None]
+                  ,['monitoringlocationtypename'    ,'TEXT'  ,'Monitoring Location Type Name'           ,256 ,None,None]
+                  ,['monitoringlocationdescription' ,'TEXT'  ,'Monitoring Location Description'         ,4000,None,None]
+                  ,['huceightdigitcode'             ,'TEXT'  ,'HUC Eight Digit Code'                    ,8   ,None,None]
+                  ,['drainageareameasure_measureval','DOUBLE','Drainage Area Measure Value'             ,None,None,None]
+                  ,['drainageareameasure_measureunt','TEXT'  ,'Drainage Area Measure Unit'              ,16  ,None,None]
+                  ,['contributingdrainageareameasva','DOUBLE','Contributing Drainage Area Measure Value',None,None,None]
+                  ,['contributingdrainageareameasun','TEXT'  ,'Contributing Drainage Area Measure Unit' ,16  ,None,None]
+                  ,['latitudemeasure'               ,'DOUBLE','Latitude'                                ,None,None,None]
+                  ,['longitudemeasure'              ,'DOUBLE','Longitude'                               ,None,None,None]
+                  ,['sourcemapscalenumeric'         ,'DOUBLE','Source Map Scale Numeric'                ,None,None,None]
+                  ,['horizontalaccuracymeasureval'  ,'TEXT'  ,'Horizontal Accuracy Measure Value'       ,64  ,None,None]
+                  ,['horizontalaccuracymeasureunit' ,'TEXT'  ,'Horizontal Accuracy Measure Unit'        ,16  ,None,None]
+                  ,['horizontalcollectionmethodname','TEXT'  ,'Horizontal Collection Method Name'       ,2000,None,None]
+                  ,['horizontalcoordinatereferences','TEXT'  ,'Horizontal Coordinate References'        ,16  ,None,None]
+                  ,['verticalmeasure_measurevalue'  ,'TEXT'  ,'Vertical Measure Value'                  ,64  ,None,None]
+                  ,['verticalmeasure_measureunit'   ,'TEXT'  ,'Vertical Measure Unit'                   ,16  ,None,None]
+                  ,['verticalaccuracymeasurevalue'  ,'TEXT'  ,'Vertical Accuracy Measure Value'         ,64  ,None,None]
+                  ,['verticalaccuracymeasureunit'   ,'TEXT'  ,'Vertical Accuracy Measure Unit'          ,16  ,None,None]
+                  ,['verticalcollectionmethodname'  ,'TEXT'  ,'Vertical Collection Method Name'         ,2000,None,None]
+                  ,['verticalcoordinatereferencesys','TEXT'  ,'Vertical Coordinate Reference System'    ,16  ,None,None]
+                  ,['countrycode'                   ,'TEXT'  ,'Country Code'                            ,2   ,None,None]
+                  ,['statecode'                     ,'TEXT'  ,'State Code'                              ,2   ,None,None]
+                  ,['countycode'                    ,'TEXT'  ,'County Code'                             ,3   ,None,None]
+                  ,['aquifername'                   ,'TEXT'  ,'Aquifer Name'                            ,2000,None,None]
+                  ,['formationtypetext'             ,'TEXT'  ,'Formation Type Text'                     ,2000,None,None]
+                  ,['aquifertypename'               ,'TEXT'  ,'Aquifer Type Name'                       ,2000,None,None]
+                  ,['constructiondatetext'          ,'TEXT'  ,'Construction Date'                       ,16  ,None,None]
+                  ,['welldepthmeasure_measurevalue' ,'DOUBLE','Well Depth Measure Value'                ,None,None,None]
+                  ,['welldepthmeasure_measureunit'  ,'TEXT'  ,'Well Depth Measure Unit'                 ,16  ,None,None]
+                  ,['wellholedepthmeasure_measureva','DOUBLE','Well Hole Depth Measure Value'           ,None,None,None]
+                  ,['wellholedepthmeasure_measureun','TEXT'  ,'Well Hole Depth Measure Unit'            ,16  ,None,None]
+                  ,['providername'                  ,'TEXT'  ,'Provider Name'                           ,16  ,None,None]
+                  ,['nearest_cip_network_distancekm','DOUBLE','Nearest CIP Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_cip_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                  ,['nearest_rad_network_distancekm','DOUBLE','Nearest RAD Network Distance (Km)'       ,None,None,None]
+                  ,['nearest_rad_network_flowtimeda','DOUBLE','Nearest CIP Network Flowtime (Day)'      ,None,None,None]
+                ]
+            );
+            
+         #------------------------------------------------------------------------
          scratch_full_link = arcpy.CreateUniqueName(
-             basename  = "ResultLinkPath"
-            ,workspace = arcpy.env.scratchGDB
+             base_name  = "ResultLinkPath"
+            ,workspace  = g_workspace
          );
          arcpy.management.CreateFeatureclass(
              out_path          = os.path.dirname(scratch_full_link)
@@ -759,10 +1047,16 @@ class SearchUsingStartingPoint(object):
                int_raindrop_return_code PLS_INTEGER;
                int_return_code          PLS_INTEGER;
                str_status_message       VARCHAR2(256 Char);
-               str_search_type          VARCHAR2(2 Char);
+               str_search_type          VARCHAR2(255 Char);
                num_max_distancekm       NUMBER;
                num_max_flowtimeday      NUMBER;
                ary_program_list         MDSYS.SDO_STRING2_ARRAY;
+               int_flowline_count       INTEGER;
+               str_out_nav_engine       VARCHAR2(255 Char);
+               int_catchment_count      INTEGER;
+               int_sfid_count           INTEGER;
+               int_cip_count            INTEGER;
+               int_rad_count            INTEGER;
             BEGIN
                -------------------------------------------------------------------
                str_session_id      := """ + format_string(str_session_id)  + """;
@@ -878,6 +1172,9 @@ class SearchUsingStartingPoint(object):
                   ,p_start_source_series           => NULL
                   ,p_start_start_date              => NULL
                   ,p_start_end_date                => NULL
+                  ,p_start_permid_joinkey          => NULL
+                  ,p_start_source_joinkey          => NULL
+                  ,p_start_cat_joinkey             => NULL
                   ,p_start_linked_data_program     => NULL
                   ,p_start_search_precision        => NULL
                   ,p_start_search_logic            => NULL
@@ -892,6 +1189,9 @@ class SearchUsingStartingPoint(object):
                   ,p_stop_source_series            => NULL
                   ,p_stop_start_date               => NULL
                   ,p_stop_end_date                 => NULL
+                  ,p_stop_permid_joinkey           => NULL
+                  ,p_stop_source_joinkey           => NULL
+                  ,p_stop_cat_joinkey              => NULL
                   ,p_stop_linked_data_program      => NULL
                   ,p_stop_search_precision         => NULL
                   ,p_stop_search_logic             => NULL
@@ -904,9 +1204,16 @@ class SearchUsingStartingPoint(object):
                   ,p_return_linked_data_cip        => 'FALSE'
                   ,p_return_linked_data_source     => 'TRUE'
                   ,p_return_linked_data_rad        => 'TRUE'
-                  ,p_return_linked_data_attr       => 'TRUE'
+                  ,p_return_linked_data_attr       => """ + format_stringboo(boo_attributes) + """
+                  ,p_remove_stop_start_sfids       => 'TRUE'
                   ,p_navigation_engine             => """ + format_string(str_navigation_engine) + """
-                  ,p_push_source_gemetry_as_rad    => NULL
+                  ,p_push_source_geometry_as_rad   => 'FALSE'
+                  ,out_flowline_count              => int_flowline_count
+                  ,out_navigation_engine           => str_out_nav_engine
+                  ,out_catchment_count             => int_catchment_count
+                  ,out_sfid_count                  => int_sfid_count
+                  ,out_cip_count                   => int_cip_count
+                  ,out_rad_count                   => int_rad_count
                   ,out_return_code                 => int_return_code
                   ,out_status_message              => str_status_message
                   ,p_sessionid                     => str_session_id
@@ -956,141 +1263,146 @@ class SearchUsingStartingPoint(object):
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_name_source_a
-            ,field_names  = [
-                'eventtype'
-               ,'program_name'
-               ,'permid_joinkey'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_series'
-               ,'source_subdivision'
-               ,'source_joinkey'
-               ,'start_date'
-               ,'end_date'
-               ,'featuredetailurl'
-               ,'areasqkm'
-               ,'nearest_network_distancekm'
-               ,'nearest_network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
+         #---------------------------------------------------------------------
+         if boo_show_source:
+            if 10006 in ary_eventtypelist \
+            or 10009 in ary_eventtypelist \
+            or 10010 in ary_eventtypelist :
             
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcareas"
-               ,field_names  = [
-                   'eventtype'
-                  ,'program_name'
-                  ,'permid_joinkey'
-                  ,'source_originator'
-                  ,'source_featureid'
-                  ,'source_featureid2'
-                  ,'source_series'
-                  ,'source_subdivision'
-                  ,'source_joinkey'
-                  ,'start_date'
-                  ,'end_date'
-                  ,'featuredetailurl'
-                  ,'areasqkm'
-                  ,'nearest_network_distancekm'
-                  ,'nearest_network_flowtimeday'
-                  ,'SHAPE@'
-                ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_source_a
+                  ,field_names  = [
+                      'eventtype'
+                     ,'program_name'
+                     ,'permid_joinkey'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_series'
+                     ,'source_subdivision'
+                     ,'source_joinkey'
+                     ,'start_date'
+                     ,'end_date'
+                     ,'featuredetailurl'
+                     ,'areasqkm'
+                     ,'nearest_network_distancekm'
+                     ,'nearest_network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+               ) as icursor:
                   
-         arcpy.SetParameterAsText(6,scratch_name_source_a);
-         
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcareas"
+                     ,field_names  = [
+                         'eventtype'
+                        ,'program_name'
+                        ,'permid_joinkey'
+                        ,'source_originator'
+                        ,'source_featureid'
+                        ,'source_featureid2'
+                        ,'source_series'
+                        ,'source_subdivision'
+                        ,'source_joinkey'
+                        ,'start_date'
+                        ,'end_date'
+                        ,'featuredetailurl'
+                        ,'areasqkm'
+                        ,'nearest_network_distancekm'
+                        ,'nearest_network_flowtimeday'
+                        ,'SHAPE@'
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+                        
+               arcpy.SetParameterAsText(10,scratch_full_source_a);
+               
+            else:
+               arcpy.SetParameterAsText(10,"");
+               
+         else:
+            arcpy.SetParameterAsText(10,"");
+            
       else:
-         arcpy.SetParameterAsText(6 ,"");
+         arcpy.SetParameterAsText(10,"");
          
       #------------------------------------------------------------------------
-      if num_return_code == 0:   
+      if num_return_code == 0:
 
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_name_source_l
-            ,field_names  = [
-                'eventtype'
-               ,'program_name'
-               ,'permid_joinkey'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_series'
-               ,'source_subdivision'
-               ,'source_joinkey'
-               ,'start_date'
-               ,'end_date'
-               ,'featuredetailurl'
-               ,'lengthkm'
-               ,'nearest_network_distancekm'
-               ,'nearest_network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
-            
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrclines"
-               ,field_names  = [
-                   'eventtype'
-                  ,'program_name'
-                  ,'permid_joinkey'
-                  ,'source_originator'
-                  ,'source_featureid'
-                  ,'source_featureid2'
-                  ,'source_series'
-                  ,'source_subdivision'
-                  ,'source_joinkey'
-                  ,'start_date'
-                  ,'end_date'
-                  ,'featuredetailurl'
-                  ,'lengthkm'
-                  ,'nearest_network_distancekm'
-                  ,'nearest_network_flowtimeday'
-                  ,'SHAPE@'
-                ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
+         #---------------------------------------------------------------------
+         if boo_show_source:
+            if 10006 in ary_eventtypelist \
+            or 10009 in ary_eventtypelist \
+            or 10010 in ary_eventtypelist :
+
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_source_l
+                  ,field_names  = [
+                      'eventtype'
+                     ,'program_name'
+                     ,'permid_joinkey'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_series'
+                     ,'source_subdivision'
+                     ,'source_joinkey'
+                     ,'start_date'
+                     ,'end_date'
+                     ,'featuredetailurl'
+                     ,'lengthkm'
+                     ,'nearest_network_distancekm'
+                     ,'nearest_network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+               ) as icursor:
                   
-         arcpy.SetParameterAsText(7,scratch_name_source_l);
-         
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrclines"
+                     ,field_names  = [
+                         'eventtype'
+                        ,'program_name'
+                        ,'permid_joinkey'
+                        ,'source_originator'
+                        ,'source_featureid'
+                        ,'source_featureid2'
+                        ,'source_series'
+                        ,'source_subdivision'
+                        ,'source_joinkey'
+                        ,'start_date'
+                        ,'end_date'
+                        ,'featuredetailurl'
+                        ,'lengthkm'
+                        ,'nearest_network_distancekm'
+                        ,'nearest_network_flowtimeday'
+                        ,'SHAPE@'
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+                        
+               arcpy.SetParameterAsText(11,scratch_full_source_l);
+               
+            else:
+               arcpy.SetParameterAsText(11,"");
+               
+         else:
+            arcpy.SetParameterAsText(11,"");
+            
       else:
-         arcpy.SetParameterAsText(7 ,"");
+         arcpy.SetParameterAsText(11,"");
          
       #------------------------------------------------------------------------
-      if num_return_code == 0:   
-
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_name_source_p
-            ,field_names  = [
-                'eventtype'
-               ,'program_name'
-               ,'permid_joinkey'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_series'
-               ,'source_subdivision'
-               ,'source_joinkey'
-               ,'start_date'
-               ,'end_date'
-               ,'featuredetailurl'
-               ,'nearest_network_distancekm'
-               ,'nearest_network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
-            
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcpoints"
+      # source_subdivision is missing from ancient Oracle SDE registered view
+      if num_return_code == 0:
+         
+         if boo_show_source:
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_full_source_p
                ,field_names  = [
                    'eventtype'
                   ,'program_name'
@@ -1099,7 +1411,6 @@ class SearchUsingStartingPoint(object):
                   ,'source_featureid'
                   ,'source_featureid2'
                   ,'source_series'
-                  ,'source_subdivision'
                   ,'source_joinkey'
                   ,'start_date'
                   ,'end_date'
@@ -1108,53 +1419,50 @@ class SearchUsingStartingPoint(object):
                   ,'nearest_network_flowtimeday'
                   ,'SHAPE@'
                 ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(8,scratch_name_source_p);
-         
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcpoints"
+                  ,field_names  = [
+                      'eventtype'
+                     ,'program_name'
+                     ,'permid_joinkey'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_series'
+                     ,'source_joinkey'
+                     ,'start_date'
+                     ,'end_date'
+                     ,'featuredetailurl'
+                     ,'nearest_network_distancekm'
+                     ,'nearest_network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(12,scratch_full_source_p);
+            
+         else:
+            arcpy.SetParameterAsText(12,"");
+            
       else:
-         arcpy.SetParameterAsText(8 ,"");  
+         arcpy.SetParameterAsText(12,"");
 
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_name_reached_a
-            ,field_names  = [
-                'eventtype' 
-               ,'program_name'   
-               ,'permanent_identifier'
-               ,'permid_joinkey' 
-               ,'eventdate'      
-               ,'reachcode'      
-               ,'reachsmdate'    
-               ,'reachresolution'
-               ,'feature_permanent_identifier'
-               ,'featureclassref'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_datadesc'
-               ,'source_series'  
-               ,'source_subdivision'
-               ,'source_joinkey' 
-               ,'start_date'     
-               ,'end_date'       
-               ,'featuredetailurl'
-               ,'event_areasqkm' 
-               ,'geogstate'      
-               ,'network_distancekm'
-               ,'network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
-            
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradareas"
+         #---------------------------------------------------------------------
+         if 10006 in ary_eventtypelist \
+         or 10009 in ary_eventtypelist \
+         or 10010 in ary_eventtypelist :
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_full_reached_a
                ,field_names  = [
                    'eventtype' 
                   ,'program_name'   
@@ -1182,56 +1490,61 @@ class SearchUsingStartingPoint(object):
                   ,'network_flowtimeday'
                   ,'SHAPE@'
                 ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(9,scratch_name_reached_a);
-         
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradareas"
+                  ,field_names  = [
+                      'eventtype' 
+                     ,'program_name'   
+                     ,'permanent_identifier'
+                     ,'permid_joinkey' 
+                     ,'eventdate'      
+                     ,'reachcode'      
+                     ,'reachsmdate'    
+                     ,'reachresolution'
+                     ,'feature_permanent_identifier'
+                     ,'featureclassref'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_datadesc'
+                     ,'source_series'  
+                     ,'source_subdivision'
+                     ,'source_joinkey' 
+                     ,'start_date'     
+                     ,'end_date'       
+                     ,'featuredetailurl'
+                     ,'event_areasqkm' 
+                     ,'geogstate'      
+                     ,'network_distancekm'
+                     ,'network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(13,scratch_full_reached_a);
+            
+         else:
+            arcpy.SetParameterAsText(13,"");
+            
       else:
-         arcpy.SetParameterAsText(9 ,"");
+         arcpy.SetParameterAsText(13,"");
 
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_name_reached_l
-            ,field_names  = [
-                'eventtype' 
-               ,'program_name'   
-               ,'permanent_identifier'
-               ,'permid_joinkey' 
-               ,'eventdate'      
-               ,'reachcode'      
-               ,'reachsmdate'    
-               ,'reachresolution'
-               ,'feature_permanent_identifier'
-               ,'featureclassref'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_datadesc'
-               ,'source_series'  
-               ,'source_subdivision'
-               ,'source_joinkey' 
-               ,'start_date'     
-               ,'end_date'       
-               ,'featuredetailurl'
-               ,'fmeasure'
-               ,'tmeasure'
-               ,'eventoffset'
-               ,'event_lengthkm' 
-               ,'geogstate'      
-               ,'network_distancekm'
-               ,'network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
-            
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradlines"
+         #---------------------------------------------------------------------
+         if 10006 in ary_eventtypelist \
+         or 10009 in ary_eventtypelist \
+         or 10010 in ary_eventtypelist :
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_full_reached_l
                ,field_names  = [
                    'eventtype' 
                   ,'program_name'   
@@ -1256,28 +1569,65 @@ class SearchUsingStartingPoint(object):
                   ,'fmeasure'
                   ,'tmeasure'
                   ,'eventoffset'
-                  ,'event_lengthkm'  
+                  ,'event_lengthkm' 
                   ,'geogstate'      
                   ,'network_distancekm'
                   ,'network_flowtimeday'
                   ,'SHAPE@'
                 ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(10,scratch_name_reached_l);
-         
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradlines"
+                  ,field_names  = [
+                      'eventtype' 
+                     ,'program_name'   
+                     ,'permanent_identifier'
+                     ,'permid_joinkey' 
+                     ,'eventdate'      
+                     ,'reachcode'      
+                     ,'reachsmdate'    
+                     ,'reachresolution'
+                     ,'feature_permanent_identifier'
+                     ,'featureclassref'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_datadesc'
+                     ,'source_series'  
+                     ,'source_subdivision'
+                     ,'source_joinkey' 
+                     ,'start_date'     
+                     ,'end_date'       
+                     ,'featuredetailurl'
+                     ,'fmeasure'
+                     ,'tmeasure'
+                     ,'eventoffset'
+                     ,'event_lengthkm'  
+                     ,'geogstate'      
+                     ,'network_distancekm'
+                     ,'network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(14,scratch_full_reached_l);
+            
+         else:
+            arcpy.SetParameterAsText(14,"");
+            
       else:
-         arcpy.SetParameterAsText(10,"");  
+         arcpy.SetParameterAsText(14,"");
          
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
          with arcpy.da.InsertCursor(
-             in_table     = scratch_name_reached_p
+             in_table     = scratch_full_reached_p
             ,field_names  = [
                 'eventtype' 
                ,'program_name'   
@@ -1344,167 +1694,414 @@ class SearchUsingStartingPoint(object):
                for row in scursor:
                   icursor.insertRow(row);
                   
-         arcpy.SetParameterAsText(11,scratch_name_reached_p);
+         arcpy.SetParameterAsText(15,scratch_full_reached_p);
          
       else:
-         arcpy.SetParameterAsText(11,"");
-
+         arcpy.SetParameterAsText(15,"");
 
       #------------------------------------------------------------------------
       if num_return_code == 0:
                   
-         ######################################################################
-         if str_navigation_engine == 'V1':
-            
-            with arcpy.da.InsertCursor(
-                in_table     = scratch_full_fl
-               ,field_names  = [
-                   'nhdplusid'
-                  ,'hydroseq'
-                  ,'fmeasure'
-                  ,'tmeasure'
-                  ,'lengthkm'
-                  ,'flowtimeday'
-                  ,'network_distancekm'
-                  ,'network_flowtimeday'
-                  ,'levelpathi'
-                  ,'terminalpa'
-                  ,'uphydroseq'
-                  ,'dnhydroseq'
-                  ,'navtermination_flag'
-                  ,'SHAPE@' 
-                ]
-            ) as icursor:
+         if boo_nav_results:
+         
+            ######################################################################
+            if str_navigation_engine == 'V1':
                
-               with arcpy.da.SearchCursor(
-                   in_table     = sde_conn_path + "\\rad_ags.navigation_v1_results"
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_fl
                   ,field_names  = [
                       'nhdplusid'
-                     ,'hydrosequence'
+                     ,'hydroseq'
                      ,'fmeasure'
                      ,'tmeasure'
                      ,'lengthkm'
                      ,'flowtimeday'
                      ,'network_distancekm'
                      ,'network_flowtimeday'
-                     ,'levelpathid'
-                     ,'terminalpathid'
-                     ,'uphydrosequence'
-                     ,'downhydrosequence'
+                     ,'levelpathi'
+                     ,'terminalpa'
+                     ,'uphydroseq'
+                     ,'dnhydroseq'
                      ,'navtermination_flag'
-                     ,'SHAPE@'  
+                     ,'SHAPE@' 
                    ]
-                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-               ) as scursor:
-            
-                  for row in scursor:
-                     icursor.insertRow(row);
-                     
-         ######################################################################
-         elif str_navigation_engine == 'V2':
-            
-            with arcpy.da.InsertCursor(
-                in_table     = scratch_full_fl
-               ,field_names  = [
-                   'nhdplusid'
-                  ,'hydroseq'
-                  ,'fmeasure'
-                  ,'tmeasure'
-                  ,'lengthkm'
-                  ,'flowtimeday'
-                  ,'network_distancekm'
-                  ,'network_flowtimeday'
-                  ,'levelpathi'
-                  ,'terminalpa'
-                  ,'uphydroseq'
-                  ,'dnhydroseq'
-                  ,'navtermination_flag'
-                  ,'SHAPE@' 
-                ]
-            ) as icursor:
-               
-               with arcpy.da.SearchCursor(
-                   in_table     = sde_conn_path + "\\rad_ags.navigation_v2_results"
-                  ,field_names  = [
-                      'nhdplusid'
-                     ,'hydrosequence'
-                     ,'fmeasure'
-                     ,'tmeasure'
-                     ,'lengthkm'
-                     ,'flowtimeday'
-                     ,'network_distancekm'
-                     ,'network_flowtimeday'
-                     ,'levelpathid'
-                     ,'terminalpathid'
-                     ,'uphydrosequence'
-                     ,'downhydrosequence'
-                     ,'navtermination_flag'
-                     ,'SHAPE@'  
-                   ]
-                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-               ) as scursor:
-            
-                  for row in scursor:
-                     icursor.insertRow(row);
-
-         ######################################################################
-         elif str_navigation_engine == 'V3':
-            
-            with arcpy.da.InsertCursor(
-                in_table     = scratch_full_fl
-               ,field_names  = [
-                   'nhdplusid'
-                  ,'hydroseq'
-                  ,'fmeasure'
-                  ,'tmeasure'
-                  ,'lengthkm'
-                  ,'flowtimeday'
-                  ,'network_distancekm'
-                  ,'network_flowtimeday'
-                  ,'levelpathi'
-                  ,'terminalpa'
-                  ,'uphydroseq'
-                  ,'dnhydroseq'
-                  ,'navtermination_flag'
-                  ,'SHAPE@' 
-                ]
-            ) as icursor:
-               
-               with arcpy.da.SearchCursor(
-                   in_table     = sde_conn_path + "\\rad_ags.navigation_v3_results"
-                  ,field_names  = [
-                      'nhdplusid'
-                     ,'hydrosequence'
-                     ,'fmeasure'
-                     ,'tmeasure'
-                     ,'lengthkm'
-                     ,'flowtimeday'
-                     ,'network_distancekm'
-                     ,'network_flowtimeday'
-                     ,'levelpathid'
-                     ,'terminalpathid'
-                     ,'uphydrosequence'
-                     ,'downhydrosequence'
-                     ,'navtermination_flag'
-                     ,'SHAPE@'  
-                   ]
-                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-               ) as scursor:
-            
-                  for row in scursor:
-                     icursor.insertRow(row);
-                     
-         else:
-            raise Exception("err");
+               ) as icursor:
                   
-         arcpy.SetParameterAsText(12 ,scratch_full_nav);
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.navigation_v1_results"
+                     ,field_names  = [
+                         'nhdplusid'
+                        ,'hydrosequence'
+                        ,'fmeasure'
+                        ,'tmeasure'
+                        ,'lengthkm'
+                        ,'flowtimeday'
+                        ,'network_distancekm'
+                        ,'network_flowtimeday'
+                        ,'levelpathid'
+                        ,'terminalpathid'
+                        ,'uphydrosequence'
+                        ,'downhydrosequence'
+                        ,'navtermination_flag'
+                        ,'SHAPE@'  
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+                        
+            ######################################################################
+            elif str_navigation_engine == 'V2':
+               
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_fl
+                  ,field_names  = [
+                      'nhdplusid'
+                     ,'hydroseq'
+                     ,'fmeasure'
+                     ,'tmeasure'
+                     ,'lengthkm'
+                     ,'flowtimeday'
+                     ,'network_distancekm'
+                     ,'network_flowtimeday'
+                     ,'levelpathi'
+                     ,'terminalpa'
+                     ,'uphydroseq'
+                     ,'dnhydroseq'
+                     ,'navtermination_flag'
+                     ,'SHAPE@' 
+                   ]
+               ) as icursor:
+                  
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.navigation_v2_results"
+                     ,field_names  = [
+                         'nhdplusid'
+                        ,'hydrosequence'
+                        ,'fmeasure'
+                        ,'tmeasure'
+                        ,'lengthkm'
+                        ,'flowtimeday'
+                        ,'network_distancekm'
+                        ,'network_flowtimeday'
+                        ,'levelpathid'
+                        ,'terminalpathid'
+                        ,'uphydrosequence'
+                        ,'downhydrosequence'
+                        ,'navtermination_flag'
+                        ,'SHAPE@'  
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+
+            ######################################################################
+            elif str_navigation_engine == 'V3':
+               
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_fl
+                  ,field_names  = [
+                      'nhdplusid'
+                     ,'hydroseq'
+                     ,'fmeasure'
+                     ,'tmeasure'
+                     ,'lengthkm'
+                     ,'flowtimeday'
+                     ,'network_distancekm'
+                     ,'network_flowtimeday'
+                     ,'levelpathi'
+                     ,'terminalpa'
+                     ,'uphydroseq'
+                     ,'dnhydroseq'
+                     ,'navtermination_flag'
+                     ,'SHAPE@' 
+                   ]
+               ) as icursor:
+                  
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.navigation_v3_results"
+                     ,field_names  = [
+                         'nhdplusid'
+                        ,'hydrosequence'
+                        ,'fmeasure'
+                        ,'tmeasure'
+                        ,'lengthkm'
+                        ,'flowtimeday'
+                        ,'network_distancekm'
+                        ,'network_flowtimeday'
+                        ,'levelpathid'
+                        ,'terminalpathid'
+                        ,'uphydrosequence'
+                        ,'downhydrosequence'
+                        ,'navtermination_flag'
+                        ,'SHAPE@'  
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+                        
+            else:
+               raise Exception("err");
+                     
+            arcpy.SetParameterAsText(16,scratch_full_fl);
+            
+         else:
+            arcpy.SetParameterAsText(16,"");
             
       else:
-         arcpy.SetParameterAsText(12 ,"");
-            
+         arcpy.SetParameterAsText(16,"");
+         
       #------------------------------------------------------------------------   
       if num_return_code == 0:
          
+         if boo_attributes and 10028 in ary_eventtypelist:
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_frspub_attr
+               ,field_names  = [
+                   'source_joinkey'
+                  ,'registry_id'
+                  ,'primary_name'
+                  ,'city_name'
+                  ,'county_name'
+                  ,'fips_code'
+                  ,'state_code'
+                  ,'state_name'
+                  ,'country_name'
+                  ,'postal_code'
+                  ,'tribal_land_code'
+                  ,'tribal_land_name'
+                  ,'us_mexico_border_ind'
+                  ,'pgm_sys_id'
+                  ,'pgm_sys_acrnm'
+                  ,'nearest_cip_network_distancekm'
+                  ,'nearest_cip_network_flowtimeda'
+                  ,'nearest_rad_network_distancekm'
+                  ,'nearest_rad_network_flowtimeda'
+                ]
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldattrfrspub"
+                  ,field_names  = [
+                      'source_joinkey'
+                     ,'registry_id'
+                     ,'primary_name'
+                     ,'city_name'
+                     ,'county_name'
+                     ,'fips_code'
+                     ,'state_code'
+                     ,'state_name'
+                     ,'country_name'
+                     ,'postal_code'
+                     ,'tribal_land_code'
+                     ,'tribal_land_name'
+                     ,'us_mexico_border_ind'
+                     ,'pgm_sys_id'
+                     ,'pgm_sys_acrnm'
+                     ,'nearest_cip_network_distancekm'
+                     ,'nearest_cip_network_flowtimeda'
+                     ,'nearest_rad_network_distancekm'
+                     ,'nearest_rad_network_flowtimeda'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(17,scratch_frspub_attr);
+            
+         else:
+            arcpy.SetParameterAsText(17,"");
+            
+      else:
+         arcpy.SetParameterAsText(17,"");
+         
+      #------------------------------------------------------------------------   
+      if num_return_code == 0:
+         
+         if boo_attributes and 10015 in ary_eventtypelist:
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_npdes_attr
+               ,field_names  = [
+                   'source_joinkey'
+                  ,'external_permit_nmbr'
+                  ,'permit_name'
+                  ,'registry_id'
+                  ,'primary_name'
+                  ,'state_code'
+                  ,'agency_type_code'
+                  ,'issue_date'
+                  ,'issuing_agency'
+                  ,'original_issue_date'
+                  ,'permit_status_code'
+                  ,'permit_type_code'
+                  ,'retirement_date'
+                  ,'termination_date'
+                  ,'nearest_cip_network_distancekm'
+                  ,'nearest_cip_network_flowtimeda'
+                  ,'nearest_rad_network_distancekm'
+                  ,'nearest_rad_network_flowtimeda'
+                ]
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldattrnpdes"
+                  ,field_names  = [
+                      'source_joinkey'
+                     ,'external_permit_nmbr'
+                     ,'permit_name'
+                     ,'registry_id'
+                     ,'primary_name'
+                     ,'state_code'
+                     ,'agency_type_code'
+                     ,'issue_date'
+                     ,'issuing_agency'
+                     ,'original_issue_date'
+                     ,'permit_status_code'
+                     ,'permit_type_code'
+                     ,'retirement_date'
+                     ,'termination_date'
+                     ,'nearest_cip_network_distancekm'
+                     ,'nearest_cip_network_flowtimeda'
+                     ,'nearest_rad_network_distancekm'
+                     ,'nearest_rad_network_flowtimeda'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(18,scratch_npdes_attr);
+            
+         else:
+            arcpy.SetParameterAsText(18,"");
+            
+      else:
+         arcpy.SetParameterAsText(18,"");
+         
+      #------------------------------------------------------------------------   
+      if num_return_code == 0:
+         
+         if boo_attributes and 10032 in ary_eventtypelist:
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_wqp_attr
+               ,field_names  = [
+                   'source_joinkey'
+                  ,'organizationidentifier'
+                  ,'organizationformalname'
+                  ,'monitoringlocationidentifier'
+                  ,'monitoringlocationname'
+                  ,'monitoringlocationtypename'
+                  ,'monitoringlocationdescription'
+                  ,'huceightdigitcode'
+                  ,'drainageareameasure_measureval'
+                  ,'drainageareameasure_measureunt'
+                  ,'contributingdrainageareameasva'
+                  ,'contributingdrainageareameasun'
+                  ,'latitudemeasure'
+                  ,'longitudemeasure'
+                  ,'sourcemapscalenumeric'
+                  ,'horizontalaccuracymeasureval'
+                  ,'horizontalaccuracymeasureunit'
+                  ,'horizontalcollectionmethodname'
+                  ,'horizontalcoordinatereferences'
+                  ,'verticalmeasure_measurevalue'
+                  ,'verticalmeasure_measureunit'
+                  ,'verticalaccuracymeasurevalue'
+                  ,'verticalaccuracymeasureunit'
+                  ,'verticalcollectionmethodname'
+                  ,'verticalcoordinatereferencesys'
+                  ,'countrycode'
+                  ,'statecode'
+                  ,'countycode'
+                  ,'aquifername'
+                  ,'formationtypetext'
+                  ,'aquifertypename'
+                  ,'constructiondatetext'
+                  ,'welldepthmeasure_measurevalue'
+                  ,'welldepthmeasure_measureunit'
+                  ,'wellholedepthmeasure_measureva'
+                  ,'wellholedepthmeasure_measureun'
+                  ,'providername'
+                  ,'nearest_cip_network_distancekm'
+                  ,'nearest_cip_network_flowtimeda'
+                  ,'nearest_rad_network_distancekm'
+                  ,'nearest_rad_network_flowtimeda'
+                ]
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldattrwqp"
+                  ,field_names  = [
+                      'source_joinkey'
+                     ,'organizationidentifier'
+                     ,'organizationformalname'
+                     ,'monitoringlocationidentifier'
+                     ,'monitoringlocationname'
+                     ,'monitoringlocationtypename'
+                     ,'monitoringlocationdescription'
+                     ,'huceightdigitcode'
+                     ,'drainageareameasure_measureval'
+                     ,'drainageareameasure_measureunt'
+                     ,'contributingdrainageareameasva'
+                     ,'contributingdrainageareameasun'
+                     ,'latitudemeasure'
+                     ,'longitudemeasure'
+                     ,'sourcemapscalenumeric'
+                     ,'horizontalaccuracymeasureval'
+                     ,'horizontalaccuracymeasureunit'
+                     ,'horizontalcollectionmethodname'
+                     ,'horizontalcoordinatereferences'
+                     ,'verticalmeasure_measurevalue'
+                     ,'verticalmeasure_measureunit'
+                     ,'verticalaccuracymeasurevalue'
+                     ,'verticalaccuracymeasureunit'
+                     ,'verticalcollectionmethodname'
+                     ,'verticalcoordinatereferencesys'
+                     ,'countrycode'
+                     ,'statecode'
+                     ,'countycode'
+                     ,'aquifername'
+                     ,'formationtypetext'
+                     ,'aquifertypename'
+                     ,'constructiondatetext'
+                     ,'welldepthmeasure_measurevalue'
+                     ,'welldepthmeasure_measureunit'
+                     ,'wellholedepthmeasure_measureva'
+                     ,'wellholedepthmeasure_measureun'
+                     ,'providername'
+                     ,'nearest_cip_network_distancekm'
+                     ,'nearest_cip_network_flowtimeda'
+                     ,'nearest_rad_network_distancekm'
+                     ,'nearest_rad_network_flowtimeda'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(19,scratch_wqp_attr);
+            
+         else:
+            arcpy.SetParameterAsText(19,"");
+            
+      else:
+         arcpy.SetParameterAsText(19,"");
+            
+      #------------------------------------------------------------------------   
+      if num_return_code == 0:
+            
          with arcpy.da.InsertCursor(
              in_table     = scratch_full_link
             ,field_names  = [
@@ -1523,10 +2120,10 @@ class SearchUsingStartingPoint(object):
                for row in scursor:
                   icursor.insertRow(row);
                   
-         arcpy.SetParameterAsText(13,scratch_full_link);
+         arcpy.SetParameterAsText(20,scratch_full_link);
          
       else:
-         arcpy.SetParameterAsText(13 ,"");
+         arcpy.SetParameterAsText(20,"");
 
       #------------------------------------------------------------------------
       #-- Step 110
@@ -1538,5 +2135,37 @@ class SearchUsingStartingPoint(object):
       if str_status_message is None:
          str_status_message = "";
 
-      arcpy.SetParameterAsText(14,str_status_message);
+      arcpy.SetParameterAsText(21,str_status_message);
 
+###############################################################################
+def format_stringboo(val):
+
+   if val is None:
+      return "NULL";
+
+   elif val is True:
+      return "'TRUE'";
+   
+   elif val is False:
+      return "'FALSE'";
+   
+   
+###############################################################################
+def format_string(val):
+
+   if val is None:
+      return "NULL";
+
+   val = val.replace("'","''");
+
+   return "'" + val + "'";
+
+###############################################################################
+def format_number(val):
+
+   if val is None:
+      return "NULL";
+
+   return str(val);
+   
+   

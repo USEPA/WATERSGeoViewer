@@ -1,6 +1,8 @@
 import arcpy;
 import sys,os,uuid,json;
 
+g_workspace = arcpy.env.scratchGDB;
+
 class Toolbox(object):
 
    def __init__(self):
@@ -16,8 +18,8 @@ class DelineateUsingStartingPoint(object):
 
    def __init__(self):
       
-      self.label = "Delineate Using Starting Point"
-      self.name  = "DelineateUsingStartingPoint"
+      self.label = "Delineate Using Starting Point";
+      self.name  = "DelineateUsingStartingPoint";
       self.description = "The EPA Office of Water Watershed Delineation Service provides an areal representation of the " + \
          "navigation process by linking navigated flowlines to associated catchment geographies. " + \
          "For more information see " +  \
@@ -26,6 +28,21 @@ class DelineateUsingStartingPoint(object):
       self.canRunInBackground = False;
 
    def getParameterInfo(self):
+      
+      delin_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultDelineatedArea.lyrx";
+      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultStreamsSelected.lyrx";
+      catch_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultCatchmentsSelected.lyrx";
+      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultLinkPath.lyrx";
+      
+      projpath = os.path.dirname(os.path.realpath(__file__));
+      if not arcpy.Exists(delin_lyrx):
+         delin_lyrx = os.path.join(projpath,'ResultDelineatedArea.lyrx');
+      if not arcpy.Exists(flowl_lyrx):
+         flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
+      if not arcpy.Exists(catch_lyrx):
+         catch_lyrx = os.path.join(projpath,'ResultCatchmentsSelected.lyrx');
+      if not arcpy.Exists(linkp_lyrx):
+         linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
       
       param0 = arcpy.Parameter(
           displayName   = "Stream Selection Type"
@@ -93,6 +110,20 @@ class DelineateUsingStartingPoint(object):
       param5.value = False;
       
       param6 = arcpy.Parameter(
+          displayName   = "NHDPlus Version"
+         ,name          = "NHDPlusVersion"
+         ,datatype      = "GPString"
+         ,parameterType = "Required"
+         ,direction     = "Input"
+         ,enabled       = True
+      );
+      param6.value       = "NHDPlus v2.1 Medium Resolution";
+      param6.filter.type = "ValueList";
+      param6.filter.list = [
+          "NHDPlus v2.1 Medium Resolution"
+       ];
+      
+      param7 = arcpy.Parameter(
           displayName   = "Advanced Configuration"
          ,name          = "AdvancedConfiguration"
          ,datatype      = "String"
@@ -101,39 +132,43 @@ class DelineateUsingStartingPoint(object):
          ,enabled       = True
       );
 
-      param7 = arcpy.Parameter(
+      param8 = arcpy.Parameter(
           displayName   = "Result Delineated Area"
          ,name          = "ResultDelineatedArea"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param8.symbology = delin_lyrx;
 
-      param8 = arcpy.Parameter(
+      param9 = arcpy.Parameter(
           displayName   = "Result Streams Selected"
          ,name          = "ResultStreamsSelected"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param9.symbology = flowl_lyrx;
       
-      param9 = arcpy.Parameter(
+      param10 = arcpy.Parameter(
           displayName   = "Result Catchments Selected"
          ,name          = "ResultCatchmentsSelected"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param10.symbology = catch_lyrx; 
       
-      param10 = arcpy.Parameter(
+      param11 = arcpy.Parameter(
           displayName   = "Result Link Path"
          ,name          = "ResultLinkPath"
          ,datatype      = ["DEFeatureClass","GPString"]
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param11.symbology = linkp_lyrx;
       
-      param11 = arcpy.Parameter(
+      param12 = arcpy.Parameter(
           displayName   = "Status Message"
          ,name          = "StatusMessage"
          ,datatype      = "GPString"
@@ -154,6 +189,7 @@ class DelineateUsingStartingPoint(object):
          ,param9
          ,param10
          ,param11
+         ,param12
       ];
 
       return params;
@@ -177,6 +213,7 @@ class DelineateUsingStartingPoint(object):
 	   # check for the .sde file here first but will fall back the script location if not found.
       
       sde_connection = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ora_rad_ags.sde";
+      projpath = os.path.dirname(os.path.realpath(__file__));
       
       #------------------------------------------------------------------------
       def strip_empty(val):
@@ -228,7 +265,8 @@ class DelineateUsingStartingPoint(object):
       str_max_flowtimeday = strip_empty(parameters[3].value);
       boo_nav_results     = get_boo(parameters[4].valueAsText);
       boo_catch_results   = get_boo(parameters[5].valueAsText);
-      str_advanced_config = strip_empty(parameters[6].valueAsText);
+      str_nhdplus_version = strip_empty(parameters[6].valueAsText);
+      str_advanced_config = strip_empty(parameters[7].valueAsText);
       str_start_geom      = None;
       
       #------------------------------------------------------------------------
@@ -319,7 +357,7 @@ class DelineateUsingStartingPoint(object):
          
          scratch_full_delin = arcpy.CreateUniqueName(
              base_name = "ResultDelineatedArea"
-            ,workspace = arcpy.env.scratchGDB
+            ,workspace = g_workspace
          );
          arcpy.management.CreateFeatureclass(
              out_path          = os.path.dirname(scratch_full_delin)
@@ -346,7 +384,7 @@ class DelineateUsingStartingPoint(object):
             
             scratch_full_fl = arcpy.CreateUniqueName(
                 base_name = "ResultStreamsSelected"
-               ,workspace = arcpy.env.scratchGDB
+               ,workspace = g_workspace
             );
             arcpy.management.CreateFeatureclass(
                 out_path          = os.path.dirname(scratch_full_fl)
@@ -364,7 +402,7 @@ class DelineateUsingStartingPoint(object):
                    ['nhdplusid'           ,'DOUBLE','NHDPlusID'                  ,None,None,None]
                   ,['hydroseq'            ,'DOUBLE','HydroSeq'                   ,None,None,None]
                   ,['fmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
-                  ,['tmeasure'            ,'DOUBLE','From Measure'               ,None,None,None]
+                  ,['tmeasure'            ,'DOUBLE','To Measure'                 ,None,None,None]
                   ,['lengthkm'            ,'DOUBLE','Length (Km)'                ,None,None,None]
                   ,['flowtimeday'         ,'DOUBLE','Flowtime (Day)'             ,None,None,None]
                   ,['network_distancekm'  ,'DOUBLE','Network Distance (Km)'      ,None,None,None]
@@ -385,7 +423,7 @@ class DelineateUsingStartingPoint(object):
             
             scratch_full_catch = arcpy.CreateUniqueName(
                 base_name = "ResultCatchmentsSelected"
-               ,workspace = arcpy.env.scratchGDB
+               ,workspace = g_workspace
             );
             arcpy.management.CreateFeatureclass(
                 out_path          = os.path.dirname(scratch_full_catch)
@@ -410,7 +448,7 @@ class DelineateUsingStartingPoint(object):
          #------------------------------------------------------------------------
          scratch_full_link = arcpy.CreateUniqueName(
              base_name = "ResultLinkPath"
-            ,workspace = arcpy.env.scratchGDB
+            ,workspace = g_workspace
          );
          arcpy.management.CreateFeatureclass(
              out_path          = os.path.dirname(scratch_full_link)
@@ -446,8 +484,7 @@ class DelineateUsingStartingPoint(object):
             arcpy.AddMessage(". Failed to connect to " + str(sde_conn_path) + ".");
             
             try:
-               z = os.path.dirname(os.path.realpath(__file__));
-               sde_conn_path = os.path.join(z,os.path.basename(sde_connection));
+               sde_conn_path = os.path.join(projpath,os.path.basename(sde_connection));
                sde_conn = arcpy.ArcSDESQLExecute(sde_conn_path);
 
             except:
@@ -734,11 +771,11 @@ class DelineateUsingStartingPoint(object):
          
                for row in scursor:
                   icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(7 ,scratch_full_delin);
+
+         arcpy.SetParameterAsText(8 ,scratch_full_delin);
          
       else:
-         arcpy.SetParameterAsText(7 ,"");
+         arcpy.SetParameterAsText(8 ,"");
                   
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -789,13 +826,13 @@ class DelineateUsingStartingPoint(object):
                   for row in scursor:
                      icursor.insertRow(row);
                      
-            arcpy.SetParameterAsText(8 ,scratch_full_fl);
+            arcpy.SetParameterAsText(9 ,scratch_full_fl);
          
          else:
-            arcpy.SetParameterAsText(8 ,"");
+            arcpy.SetParameterAsText(9 ,"");
          
       else:
-         arcpy.SetParameterAsText(8 ,"");
+         arcpy.SetParameterAsText(9 ,"");
          
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -827,14 +864,14 @@ class DelineateUsingStartingPoint(object):
             
                   for row in scursor:
                      icursor.insertRow(row);
-                     
-            arcpy.SetParameterAsText(9 ,scratch_full_catch);
+                          
+            arcpy.SetParameterAsText(10,scratch_full_catch);
             
          else:
-            arcpy.SetParameterAsText(9 ,"");
+            arcpy.SetParameterAsText(10,"");
             
       else:
-         arcpy.SetParameterAsText(9 ,"");
+         arcpy.SetParameterAsText(10,"");
          
       #------------------------------------------------------------------------
       if num_return_code == 0:
@@ -856,11 +893,11 @@ class DelineateUsingStartingPoint(object):
          
                for row in scursor:
                   icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(10,scratch_full_link);
+
+         arcpy.SetParameterAsText(11,scratch_full_link);
          
       else:
-         arcpy.SetParameterAsText(10 ,"");
+         arcpy.SetParameterAsText(11 ,"");
 
       #------------------------------------------------------------------------
       #-- Step 100
@@ -872,7 +909,7 @@ class DelineateUsingStartingPoint(object):
       if str_status_message is None:
          str_status_message = "";
 
-      arcpy.SetParameterAsText(11,str_status_message);
+      arcpy.SetParameterAsText(12,str_status_message);
 
 ###############################################################################
 def format_string(input):
