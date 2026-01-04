@@ -38,7 +38,7 @@ arcpy.AddMessage(". User    : " + cp.user);
 arcpy.AddMessage(". Instance: " + cp.instance);
 
 if not os.path.exists(ags_conn):
-   print(". AGS connection " + str(ags_conn) + " not found.");
+   arcpy.AddMessage(". AGS connection " + str(ags_conn) + " not found.");
    exit(-1);
    
 arcpy.AddMessage(". Service will be deployed to: ");
@@ -202,43 +202,46 @@ arcpy.AddMessage("Analyzing service definition...");
 analysis = gpd.analyzeSDDraft();
 
 if analysis["errors"] != []:
-   print("---- ERRORS ----");
+   arcpy.AddMessage("---- ERRORS ----");
    vars = analysis["errors"]
    for item in vars:
-      print("    ", item[1], ' (CODE %i)' % item[0]);
+      arcpy.AddMessage('.   ' + str(item[1]) + ' (CODE ' + str(item[0]) + ')');
       if len(item) > 2:
-         print("       applies to:");
+         arcpy.AddMessage(".      applies to:");
          for layer in item[2]:
-            print(layer.name);
-         print(" ");
+            arcpy.AddMessage('.         ' + layer.name);
+         arcpy.AddMessage(" ");
 
 if analysis["warnings"] != []:
-   print("---- WARNINGS ----");
+   arcpy.AddMessage("---- WARNINGS ----");
    vars = analysis["warnings"]
    for item in vars:
-      print("    ", item[1], ' (CODE %i)' % item[0]);
-      if len(item) > 2:
-         print("       applies to:");
-         for layer in item[2]:
-            print(layer.name);
-         print(" ");
+      if item[1].find('.lyrx') > 0 and item[1].find('is not registered with the server and will be copied') > 0:
+         pass; # remove silly warning
+      else:
+         arcpy.AddMessage('.   ' + str(item[1]) + ' (CODE ' + str(item[0]) + ')');
+         if len(item) > 2:
+            arcpy.AddMessage(".      applies to:");
+            for layer in item[2]:
+               arcpy.AddMessage('.         ' + layer.name);
+            arcpy.AddMessage(" ");
          
 if analysis["messages"] != []:
-   print("---- MESSAGES ----");
+   arcpy.AddMessage("---- MESSAGES ----");
    vars = analysis["messages"]
    for item in vars:
-      print("    ", item[1], ' (CODE %i)' % item[0]);
+      arcpy.AddMessage('.   ' + str(item[1]) + ' (CODE ' + str(item[0]) + ')');
       if len(item) > 2:
-         print("       applies to:");
+         arcpy.AddMessage(".      applies to:");
          for layer in item[2]:
-            print(layer.name);
-         print(" ");
+            arcpy.AddMessage('.         ' + layer.name);
+         arcpy.AddMessage(" ");
          
 if analysis['errors'] == []:
    arcpy.AddMessage(". No errors found.");
 else:
-   print(" ");
-   print(" Service Errors must be corrected. Exiting.");
+   arcpy.AddMessage(" ");
+   arcpy.AddMessage(" Service Errors must be corrected. Exiting.");
    exit(-1);
 
 #------------------------------------------------------------------------------

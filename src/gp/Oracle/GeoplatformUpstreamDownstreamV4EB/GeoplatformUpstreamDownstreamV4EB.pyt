@@ -28,14 +28,32 @@ class SearchUsingStartingPoint(object):
 
    def getParameterInfo(self):
       
-      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultStreamsSelected.lyrx";
-      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultLinkPath.lyrx";
+      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultStreamsSelected.lyrx";
+      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultLinkPath.lyrx";
+      source_p       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourcePointLinkedData.lyrx";
+      source_l       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceLinearLinkedData.lyrx";
+      source_a       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceAreaLinkedData.lyrx";
+      reach_p        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedPointLinkedData.lyrx";
+      reach_l        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedLinearLinkedData.lyrx";
+      reach_a        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedAreaLinkedData.lyrx";
       
       projpath = os.path.dirname(os.path.realpath(__file__));
       if not arcpy.Exists(flowl_lyrx):
          flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
       if not arcpy.Exists(linkp_lyrx):
          linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
+      if not arcpy.Exists(source_p):
+         source_p = os.path.join(projpath,'ResultSourcePointLinkedData.lyrx');
+      if not arcpy.Exists(source_l):
+         source_l = os.path.join(projpath,'ResultSourceLinearLinkedData.lyrx');
+      if not arcpy.Exists(source_a):
+         source_a = os.path.join(projpath,'ResultSourceAreaLinkedData.lyrx');
+      if not arcpy.Exists(reach_p):
+         reach_p = os.path.join(projpath,'ResultReachedPointLinkedData.lyrx');
+      if not arcpy.Exists(reach_l):
+         reach_l = os.path.join(projpath,'ResultReachedLinearLinkedData.lyrx');
+      if not arcpy.Exists(reach_a):
+         reach_a = os.path.join(projpath,'ResultReachedAreaLinkedData.lyrx');
       
       param0 = arcpy.Parameter(
           displayName   = "Stream Selection Type"
@@ -59,7 +77,7 @@ class SearchUsingStartingPoint(object):
           displayName   = "Starting Point"
          ,name          = "StartingPoint"
          ,datatype      = "GPFeatureRecordSetLayer"
-         ,parameterType = "Optional"
+         ,parameterType = "Required"
          ,direction     = "Input"
          ,enabled       = True
       );
@@ -170,6 +188,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param10.symbology = source_p;
       
       param11 = arcpy.Parameter(
           displayName   = "Result Source Linear Linked Data"
@@ -178,6 +197,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param11.symbology = source_l;
 
       param12 = arcpy.Parameter(
           displayName   = "Result Source Area Linked Data"
@@ -186,6 +206,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param12.symbology = source_a;
       
       param13 = arcpy.Parameter(
           displayName   = "Result Reached Point Linked Data"
@@ -194,6 +215,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param13.symbology = reach_p;
       
       param14 = arcpy.Parameter(
           displayName   = "Result Reached Linear Linked Data"
@@ -202,6 +224,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param14.symbology = reach_l;
 
       param15 = arcpy.Parameter(
           displayName   = "Result Reached Area Linked Data"
@@ -210,6 +233,7 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
+      param15.symbology = reach_a;
 
       param16 = arcpy.Parameter(
           displayName   = "Result Streams Selected"
@@ -351,13 +375,13 @@ class SearchUsingStartingPoint(object):
       def to_eventtype(val):
 
          tmp = val;
-
+         ary_tmp = [];
+         
          if tmp == "":
-            return "NULL";
+            return ("NULL",ary_tmp);
 
          elif tmp is not None:
             tmp = tmp.replace('\'','');
-            ary_tmp = [];
             ary_tmp_str = tmp.split(';');
 
             for item in ary_tmp_str:
@@ -483,29 +507,48 @@ class SearchUsingStartingPoint(object):
       #-- Step 40
       #-- Unpack feature class
       #------------------------------------------------------------------------
-      desc           = arcpy.Describe(str_start_point_fc);
-      sr             = desc.spatialReference;
-      num_start_srid = sr.factoryCode;
+      str_badgeo_message = """No valid geometry found in Starting Point feature class.""";
       
-      rows = [row for row in arcpy.da.SearchCursor(str_start_point_fc,["SHAPE@"])];
-      if rows is None or len(rows) == 0:
+      try:
+         desc           = arcpy.Describe(str_start_point_fc);
+         sr             = desc.spatialReference;
+         num_start_srid = sr.factoryCode;
+         
+      except:
          num_return_code = -30;
-         str_status_message += "No geometry found in start point feature class. ";
-
-      else:
-         geom = rows[-1][0];
+         str_status_message += str_badgeo_message;
+      
+      if num_return_code == 0:
+         rows = [row for row in arcpy.da.SearchCursor(str_start_point_fc,["SHAPE@"])];
          
-         if geom.type != "point":
-            geom = arcpy.PointGeometry(geom.trueCentroid);
-            
-         if num_start_srid != 4269:
-            geom = geom.projectAs(arcpy.SpatialReference(4269));
+         if rows is None or len(rows) == 0:
+            num_return_code = -30;
+            str_status_message += str_badgeo_message;
 
-         obj_esrijson = json.loads(geom.JSON);
-         num_long = obj_esrijson["x"];
-         num_lat  = obj_esrijson["y"];
-         
-         arcpy.AddMessage(". using start location " + str(num_long) + ", " + str(num_lat) + ".");
+         else:
+            if rows[-1] is None or len(rows[-1]) == 0:
+               num_return_code = -30;
+               str_status_message += str_badgeo_message;
+               
+            else:
+               geom = rows[-1][0];
+               
+               if geom is None:
+                  num_return_code = -30;
+                  str_status_message += str_badgeo_message;
+                  
+               else:            
+                  if geom.type != "point":
+                     geom = arcpy.PointGeometry(geom.trueCentroid);
+                     
+                  if num_start_srid != 4269:
+                     geom = geom.projectAs(arcpy.SpatialReference(4269));
+
+                  obj_esrijson = json.loads(geom.JSON);
+                  num_long = obj_esrijson["x"];
+                  num_lat  = obj_esrijson["y"];
+                  
+                  arcpy.AddMessage(". using start location " + str(num_long) + ", " + str(num_lat) + ".");
       
       #------------------------------------------------------------------------
       #-- Step 50

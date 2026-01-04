@@ -10,3 +10,6 @@
 *.pyHistory
 *.sd
 *.sddraft
+*.geodatabase
+*.geodatabase-shm
+*.geodatabase-wal

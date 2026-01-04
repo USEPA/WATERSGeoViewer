@@ -325,29 +325,48 @@ class DelineateUsingStartingPoint(object):
       #-- Step 40
       #-- Unpack feature class
       #------------------------------------------------------------------------
-      desc           = arcpy.Describe(str_start_point_fc);
-      sr             = desc.spatialReference;
-      num_start_srid = sr.factoryCode;
+      str_badgeo_message = """No valid geometry found in Starting Point feature class.""";
       
-      rows = [row for row in arcpy.da.SearchCursor(str_start_point_fc,["SHAPE@"])];
-      if rows is None or len(rows) == 0:
+      try:
+         desc           = arcpy.Describe(str_start_point_fc);
+         sr             = desc.spatialReference;
+         num_start_srid = sr.factoryCode;
+         
+      except:
          num_return_code = -30;
-         str_status_message += "No geometry found in start point feature class. ";
-
-      else:
-         geom = rows[-1][0];
+         str_status_message += str_badgeo_message;
+      
+      if num_return_code == 0:
+         rows = [row for row in arcpy.da.SearchCursor(str_start_point_fc,["SHAPE@"])];
          
-         if geom.type != "point":
-            geom = arcpy.PointGeometry(geom.trueCentroid);
-            
-         if num_start_srid != 4269:
-            geom = geom.projectAs(arcpy.SpatialReference(4269));
+         if rows is None or len(rows) == 0:
+            num_return_code = -30;
+            str_status_message += str_badgeo_message;
 
-         obj_esrijson = json.loads(geom.JSON);
-         num_long = obj_esrijson["x"];
-         num_lat  = obj_esrijson["y"];
-         
-         arcpy.AddMessage(". using start location " + str(num_long) + ", " + str(num_lat) + ".");
+         else:
+            if rows[-1] is None or len(rows[-1]) == 0:
+               num_return_code = -30;
+               str_status_message += str_badgeo_message;
+               
+            else:
+               geom = rows[-1][0];
+               
+               if geom is None:
+                  num_return_code = -30;
+                  str_status_message += str_badgeo_message;
+                  
+               else:            
+                  if geom.type != "point":
+                     geom = arcpy.PointGeometry(geom.trueCentroid);
+                     
+                  if num_start_srid != 4269:
+                     geom = geom.projectAs(arcpy.SpatialReference(4269));
+
+                  obj_esrijson = json.loads(geom.JSON);
+                  num_long = obj_esrijson["x"];
+                  num_lat  = obj_esrijson["y"];
+                  
+                  arcpy.AddMessage(". using start location " + str(num_long) + ", " + str(num_lat) + ".");
          
       #------------------------------------------------------------------------
       #-- Step 50
