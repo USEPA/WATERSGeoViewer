@@ -70,7 +70,10 @@ ags_services = {
 
 # Array of Hash of properties to be applied to individual services
 ags_service_props = {
-    'WPSServer': {'abstract': 'EPA Office of Waters WPS Services'}
+    'WPSServer': {
+       'abstract': 'EPA Office of Waters WPS Services'
+      ,'onlineResource': 'https://watersgeo.epa.gov/arcgis/services/GeoplatformUpstreamDownstreamSearchV4EB/GPServer/WPSServer'
+    }
 };
 
 ###############################################################################                                                                            #
@@ -310,7 +313,6 @@ for k, v in ags_service_props.items():
 sniffer = doc.getElementsByTagName("Url");
 for item in sniffer:
    node_text = item.firstChild.data if item.firstChild else ""
-   arcpy.AddMessage("> " + str(node_text));
    if node_text == 'https://quarry.epa.gov:6443/arcgis':
       item.firstChild.replaceWholeText('https://watersgeo.epa.gov/arcgis');   
       
