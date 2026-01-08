@@ -1,5 +1,5 @@
 import arcpy;
-import os,sys;
+import os,sys,json,time;
 import xml.dom.minidom as DOM;
 
 arcpy.AddMessage(" ");
@@ -8,6 +8,10 @@ arcpy.AddMessage("Using Python version " + str(py_version) + ".");
 
 arcpy_install = arcpy.GetInstallInfo();
 arcpy.AddMessage("Using arcpy version " + arcpy_install['Version'] + " with " + arcpy_install['LicenseLevel'] + " license.");
+
+# 330 targets ArcGIS Server 11.3
+# Adjust to your target or set None to let arcpy guess best it can
+g_target_ags_version = 330;
 
 #------------------------------------------------------------------------------
 # Step 10
@@ -136,7 +140,7 @@ resultFC = tb.DelineateUsingStartingPoint(
 arcpy.AddMessage(" Success.");
 
 #------------------------------------------------------------------------------
-#- Step 50
+#- Step 60
 #- Create the sddraft file
 #------------------------------------------------------------------------------
 arcpy.AddMessage("Generating sddraft file...");
@@ -173,7 +177,7 @@ Requests for complete upstream watersheds will attempt when possible to return a
    ,messageLevel             = "Info"
    ,minInstances             = draft_minInstances
    ,offline                  = False
-   ,offlineTarget            = 330
+   ,offlineTarget            = g_target_ags_version
    ,overwriteExistingService = True
    ,removeDefaultValues      = [
        'StartingPoint'
@@ -195,7 +199,7 @@ gpd.exportToSDDraft(
 );
 
 #------------------------------------------------------------------------------
-#- Step 60
+#- Step 70
 #- Analyze the SD
 #------------------------------------------------------------------------------
 arcpy.AddMessage("Analyzing service definition...");
@@ -245,7 +249,7 @@ else:
    exit(-1);
 
 #------------------------------------------------------------------------------
-#- Step 70
+#- Step 80
 #- Alter the sddraft file 
 #------------------------------------------------------------------------------
 def soe_enable(doc,soe,value):
@@ -311,13 +315,22 @@ doc.writexml(f);
 f.close();
 
 #------------------------------------------------------------------------------
-#- Step 80
+#- Step 90
 #- Generate sd file and deploy the service
 #------------------------------------------------------------------------------ 
-arcpy.AddMessage("Generating sd file..."); 
-arcpy.server.StageService(sddraft,sd);
+arcpy.AddMessage("Generating sd file...");
+arcpy.server.StageService(
+    in_service_definition_draft = sddraft
+   ,out_service_definition      = sd
+   ,staging_version             = g_target_ags_version
+);
     
 arcpy.AddMessage("Deploying to ArcGIS Server..."); 
-arcpy.server.UploadServiceDefinition(sd,ags_conn);
+arcpy.server.UploadServiceDefinition(
+    in_sd_file = sd
+   ,in_server  = ags_conn
+);
+
 arcpy.AddMessage("Deployment Complete.");
 arcpy.AddMessage(" ");
+

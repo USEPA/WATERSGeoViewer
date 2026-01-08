@@ -95,9 +95,9 @@
         "editable" : true,
         "dataConnection" : {
           "type" : "CIMStandardDataConnection",
-          "workspaceConnectionString" : "DATABASE=D:\\Temp\\42\\ArcGISProTemp12400\\scratch.gdb",
+          "workspaceConnectionString" : "DATABASE=",
           "workspaceFactory" : "FileGDB",
-          "dataset" : "ResultStreamsSelected",
+          "dataset" : "",
           "datasetType" : "esriDTFeatureClass"
         },
         "studyAreaSpatialRel" : "esriSpatialRelUndefined",

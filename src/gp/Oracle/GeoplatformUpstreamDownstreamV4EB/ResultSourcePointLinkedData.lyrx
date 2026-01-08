@@ -202,9 +202,9 @@
         ],
         "dataConnection" : {
           "type" : "CIMStandardDataConnection",
-          "workspaceConnectionString" : "DATABASE=..\\GeoplatformDrainageAreaDelineationEB\\scratch.gdb",
+          "workspaceConnectionString" : "DATABASE=",
           "workspaceFactory" : "FileGDB",
-          "dataset" : "ResultSourcePointLinkedData",
+          "dataset" : "",
           "datasetType" : "esriDTFeatureClass"
         },
         "studyAreaSpatialRel" : "esriSpatialRelUndefined",
@@ -488,7 +488,7 @@
                                 2
                               ],
                               [
-                                3.1243464946632899e-15,
+                                3.2962519952507539e-15,
                                 0
                               ],
                               0,
@@ -546,7 +546,8 @@
             "haloSize" : 1,
             "scaleX" : 1,
             "angleAlignment" : "Display"
-          }
+          },
+          "symbolName" : "Level_1"
         },
         "defaultSymbolPatch" : "Default",
         "fields" : [
@@ -678,66 +679,6 @@
               {
                 "type" : "CIMUniqueValueClass",
                 "editable" : true,
-                "label" : "Fish Tissue Data",
-                "patch" : "Default",
-                "symbol" : {
-                  "type" : "CIMSymbolReference",
-                  "symbol" : {
-                    "type" : "CIMPointSymbol",
-                    "symbolLayers" : [
-                      {
-                        "type" : "CIMCharacterMarker",
-                        "enable" : true,
-                        "anchorPointUnits" : "Relative",
-                        "dominantSizeAxis3D" : "Y",
-                        "size" : 16,
-                        "billboardMode3D" : "FaceNearPlane",
-                        "characterIndex" : 94,
-                        "fontFamilyName" : "ESRI Default Marker",
-                        "fontStyleName" : "Regular",
-                        "fontType" : "Unspecified",
-                        "scaleX" : 1,
-                        "symbol" : {
-                          "type" : "CIMPolygonSymbol",
-                          "symbolLayers" : [
-                            {
-                              "type" : "CIMSolidFill",
-                              "enable" : true,
-                              "color" : {
-                                "type" : "CIMRGBColor",
-                                "values" : [
-                                  224,
-                                  160,
-                                  128,
-                                  100
-                                ]
-                              }
-                            }
-                          ],
-                          "angleAlignment" : "Map"
-                        },
-                        "scaleSymbolsProportionally" : true,
-                        "respectFrame" : true
-                      }
-                    ],
-                    "haloSize" : 1,
-                    "scaleX" : 1,
-                    "angleAlignment" : "Map"
-                  }
-                },
-                "values" : [
-                  {
-                    "type" : "CIMUniqueValue",
-                    "fieldValues" : [
-                      "10010"
-                    ]
-                  }
-                ],
-                "visible" : true
-              },
-              {
-                "type" : "CIMUniqueValueClass",
-                "editable" : true,
                 "label" : "Fish Consumption Advisories",
                 "patch" : "Default",
                 "symbol" : {
@@ -797,7 +738,8 @@
               },
               {
                 "type" : "CIMUniqueValueClass",
-                "label" : "WQP Monitoring Data",
+                "editable" : true,
+                "label" : "Fish Tissue Data",
                 "patch" : "Default",
                 "symbol" : {
                   "type" : "CIMSymbolReference",
@@ -825,9 +767,9 @@
                               "color" : {
                                 "type" : "CIMRGBColor",
                                 "values" : [
-                                  0,
-                                  255,
-                                  0,
+                                  224,
+                                  160,
+                                  128,
                                   100
                                 ]
                               }
@@ -848,7 +790,7 @@
                   {
                     "type" : "CIMUniqueValue",
                     "fieldValues" : [
-                      "10032"
+                      "10010"
                     ]
                   }
                 ],
@@ -967,6 +909,65 @@
                     "type" : "CIMUniqueValue",
                     "fieldValues" : [
                       "10028"
+                    ]
+                  }
+                ],
+                "visible" : true
+              },
+              {
+                "type" : "CIMUniqueValueClass",
+                "label" : "WQP Monitoring Data",
+                "patch" : "Default",
+                "symbol" : {
+                  "type" : "CIMSymbolReference",
+                  "symbol" : {
+                    "type" : "CIMPointSymbol",
+                    "symbolLayers" : [
+                      {
+                        "type" : "CIMCharacterMarker",
+                        "enable" : true,
+                        "anchorPointUnits" : "Relative",
+                        "dominantSizeAxis3D" : "Y",
+                        "size" : 16,
+                        "billboardMode3D" : "FaceNearPlane",
+                        "characterIndex" : 94,
+                        "fontFamilyName" : "ESRI Default Marker",
+                        "fontStyleName" : "Regular",
+                        "fontType" : "Unspecified",
+                        "scaleX" : 1,
+                        "symbol" : {
+                          "type" : "CIMPolygonSymbol",
+                          "symbolLayers" : [
+                            {
+                              "type" : "CIMSolidFill",
+                              "enable" : true,
+                              "color" : {
+                                "type" : "CIMRGBColor",
+                                "values" : [
+                                  0,
+                                  255,
+                                  0,
+                                  100
+                                ]
+                              }
+                            }
+                          ],
+                          "angleAlignment" : "Map"
+                        },
+                        "scaleSymbolsProportionally" : true,
+                        "respectFrame" : true
+                      }
+                    ],
+                    "haloSize" : 1,
+                    "scaleX" : 1,
+                    "angleAlignment" : "Map"
+                  }
+                },
+                "values" : [
+                  {
+                    "type" : "CIMUniqueValue",
+                    "fieldValues" : [
+                      "10032"
                     ]
                   }
                 ],

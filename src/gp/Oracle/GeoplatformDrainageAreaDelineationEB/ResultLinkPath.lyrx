@@ -81,9 +81,9 @@
         "editable" : true,
         "dataConnection" : {
           "type" : "CIMStandardDataConnection",
-          "workspaceConnectionString" : "DATABASE=..\\GeoplatformUpstreamDownstreamV4EB\\scratch.gdb",
+          "workspaceConnectionString" : "DATABASE=",
           "workspaceFactory" : "FileGDB",
-          "dataset" : "ResultLinkPath17",
+          "dataset" : "",
           "datasetType" : "esriDTFeatureClass"
         },
         "studyAreaSpatialRel" : "esriSpatialRelUndefined",

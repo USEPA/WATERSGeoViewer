@@ -25,36 +25,37 @@ class SearchUsingStartingPoint(object):
          "<a href='https://watersgeo.epa.gov/openapi/waters/?sfilter=Discovery' target='_blank'>" + \
          "EPA service documentation</a>.";
       self.canRunInBackground = False;
-
-   def getParameterInfo(self):
       
-      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultStreamsSelected.lyrx";
-      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultLinkPath.lyrx";
-      source_p       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourcePointLinkedData.lyrx";
-      source_l       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceLinearLinkedData.lyrx";
-      source_a       = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceAreaLinkedData.lyrx";
-      reach_p        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedPointLinkedData.lyrx";
-      reach_l        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedLinearLinkedData.lyrx";
-      reach_a        = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedAreaLinkedData.lyrx";
+      #------------------------------------------------------------------------
+      self.flowl_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultStreamsSelected.lyrx";
+      self.linkp_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultLinkPath.lyrx";
+      self.source_p   = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourcePointLinkedData.lyrx";
+      self.source_l   = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceLinearLinkedData.lyrx";
+      self.source_a   = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultSourceAreaLinkedData.lyrx";
+      self.reached_p  = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedPointLinkedData.lyrx";
+      self.reached_l  = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedLinearLinkedData.lyrx";
+      self.reached_a  = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ResultReachedAreaLinkedData.lyrx";
       
       projpath = os.path.dirname(os.path.realpath(__file__));
-      if not arcpy.Exists(flowl_lyrx):
-         flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
-      if not arcpy.Exists(linkp_lyrx):
-         linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
-      if not arcpy.Exists(source_p):
-         source_p = os.path.join(projpath,'ResultSourcePointLinkedData.lyrx');
-      if not arcpy.Exists(source_l):
-         source_l = os.path.join(projpath,'ResultSourceLinearLinkedData.lyrx');
-      if not arcpy.Exists(source_a):
-         source_a = os.path.join(projpath,'ResultSourceAreaLinkedData.lyrx');
-      if not arcpy.Exists(reach_p):
-         reach_p = os.path.join(projpath,'ResultReachedPointLinkedData.lyrx');
-      if not arcpy.Exists(reach_l):
-         reach_l = os.path.join(projpath,'ResultReachedLinearLinkedData.lyrx');
-      if not arcpy.Exists(reach_a):
-         reach_a = os.path.join(projpath,'ResultReachedAreaLinkedData.lyrx');
-      
+      if not arcpy.Exists(self.flowl_lyrx):
+         self.flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
+      if not arcpy.Exists(self.linkp_lyrx):
+         self.linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
+      if not arcpy.Exists(self.source_p):
+         self.source_p = os.path.join(projpath,'ResultSourcePointLinkedData.lyrx');
+      if not arcpy.Exists(self.source_l):
+         self.source_l = os.path.join(projpath,'ResultSourceLinearLinkedData.lyrx');
+      if not arcpy.Exists(self.source_a):
+         self.source_a = os.path.join(projpath,'ResultSourceAreaLinkedData.lyrx');
+      if not arcpy.Exists(self.reached_p):
+         self.reached_p = os.path.join(projpath,'ResultReachedPointLinkedData.lyrx');
+      if not arcpy.Exists(self.reached_l):
+         self.reached_l = os.path.join(projpath,'ResultReachedLinearLinkedData.lyrx');
+      if not arcpy.Exists(self.reached_a):
+         self.reached_a = os.path.join(projpath,'ResultReachedAreaLinkedData.lyrx');
+
+   def getParameterInfo(self):
+
       param0 = arcpy.Parameter(
           displayName   = "Stream Selection Type"
          ,name          = "StreamSelectionType"
@@ -121,6 +122,7 @@ class SearchUsingStartingPoint(object):
          ,"Facilities that Discharge to Water"
          ,"Facility Registry Service"
          ,"Water Quality Portal Monitoring Data"
+         ,"Debug"
       ];
       
       param5 = arcpy.Parameter(
@@ -188,7 +190,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param10.symbology = source_p;
+      param10.schema.featureTypeRule  = "AsSpecified";
+      param10.schema.featureType      = "Simple";
+      param10.schema.geometryTypeRule = "AsSpecified";
+      param10.schema.geometryType     = "MultiPoint";
       
       param11 = arcpy.Parameter(
           displayName   = "Result Source Linear Linked Data"
@@ -197,7 +202,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param11.symbology = source_l;
+      param11.schema.featureTypeRule  = "AsSpecified";
+      param11.schema.featureType      = "Simple";
+      param11.schema.geometryTypeRule = "AsSpecified";
+      param11.schema.geometryType     = "Polyline";
 
       param12 = arcpy.Parameter(
           displayName   = "Result Source Area Linked Data"
@@ -206,7 +214,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param12.symbology = source_a;
+      param12.schema.featureTypeRule  = "AsSpecified";
+      param12.schema.featureType      = "Simple";
+      param12.schema.geometryTypeRule = "AsSpecified";
+      param12.schema.geometryType     = "Polygon";
       
       param13 = arcpy.Parameter(
           displayName   = "Result Reached Point Linked Data"
@@ -215,7 +226,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param13.symbology = reach_p;
+      param13.schema.featureTypeRule  = "AsSpecified";
+      param13.schema.featureType      = "Simple";
+      param13.schema.geometryTypeRule = "AsSpecified";
+      param13.schema.geometryType     = "Point";
       
       param14 = arcpy.Parameter(
           displayName   = "Result Reached Linear Linked Data"
@@ -224,7 +238,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param14.symbology = reach_l;
+      param14.schema.featureTypeRule  = "AsSpecified";
+      param14.schema.featureType      = "Simple";
+      param14.schema.geometryTypeRule = "AsSpecified";
+      param14.schema.geometryType     = "Polyline";
 
       param15 = arcpy.Parameter(
           displayName   = "Result Reached Area Linked Data"
@@ -233,7 +250,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param15.symbology = reach_a;
+      param15.schema.featureTypeRule  = "AsSpecified";
+      param15.schema.featureType      = "Simple";
+      param15.schema.geometryTypeRule = "AsSpecified";
+      param15.schema.geometryType     = "Polygon";
 
       param16 = arcpy.Parameter(
           displayName   = "Result Streams Selected"
@@ -242,7 +262,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param16.symbology = flowl_lyrx;
+      param16.schema.featureTypeRule  = "AsSpecified";
+      param16.schema.featureType      = "Simple";
+      param16.schema.geometryTypeRule = "AsSpecified";
+      param16.schema.geometryType     = "Polyline";
       
       param17 = arcpy.Parameter(
           displayName   = "Result FRSPUB Attributes"
@@ -275,7 +298,10 @@ class SearchUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param20.symbology = linkp_lyrx;
+      param20.schema.featureTypeRule  = "AsSpecified";
+      param20.schema.featureType      = "Simple";
+      param20.schema.geometryTypeRule = "AsSpecified";
+      param20.schema.geometryType     = "Polyline";
       
       param21 = arcpy.Parameter(
           displayName   = "Status Message"
@@ -327,12 +353,12 @@ class SearchUsingStartingPoint(object):
    def execute(self, parameters, messages):
       
       # The Esri geoprocessing publishing process is mysterious and convoluted whereby the receiving server sniffs the code for data sources 
-	   # registered to the server data store.  If a match is made the server copies its own .sde file into the unpacked project directory 
-	   # updating pointers as it sees fit.  It is VERY easy to confuse the logic.  If you wish to publish this tool to ArcGIS server, 
-	   # I’ve found the best approach is to hard-code your .sde file location here.  Providing it unambiguously upfront seems the best way to 
-	   # make the publishing process happy.  If just using the tool locally in ArcGIS Pro desktop, one can ignore this pointer.  The code does  
-	   # check for the .sde file here first but will fall back the script location if not found.
-      
+      # registered to the server data store.  If a match is made the server copies its own .sde file into the unpacked project directory 
+      # updating pointers as it sees fit.  It is VERY easy to confuse the logic.  If you wish to publish this tool to ArcGIS server, 
+      # I’ve found the best approach is to hard-code your .sde file location here.  Providing it unambiguously upfront seems the best way to 
+      # make the publishing process happy.  If just using the tool locally in ArcGIS Pro desktop, one can ignore this pointer.  The code does  
+      # check for the .sde file here first but will fall back the script location if not found.
+       
       sde_connection = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformUpstreamDownstreamV4EB\ora_rad_ags.sde";
       
       #------------------------------------------------------------------------
@@ -404,28 +430,38 @@ class SearchUsingStartingPoint(object):
       def name2eventtype(input):
 
          if input == "Assessment, Total Maximum Daily Load Tracking and Implementation System (ATTAINS)":
-            return 10033;
-            
+            return 10033;            
          elif input == "Clean Watersheds Needs Survey":
-            return 10006;
-            
+            return 10006;            
          elif input == "Fish Consumption Advisories":
-            return 10009;
-            
+            return 10009;            
          elif input == "Fish Tissue Data":
-            return 10010;
-            
+            return 10010;            
          elif input == "Facilities that Discharge to Water":
-            return 10015;
-            
+            return 10015;            
          elif input == "Facility Registry Service":
-            return 10028;
-            
+            return 10028;            
          elif input == "Water Quality Portal Monitoring Data":
             return 10032;
-            
+         elif input == "Debug":
+            return 0;            
          return input;
-   
+         
+      #------------------------------------------------------------------------
+      def adjust_lyrx(
+          lyrx_file
+         ,dataset
+      ):
+         with open(lyrx_file,"r") as jsonFile_target:
+            data_in = json.load(jsonFile_target);         
+            
+            for item in data_in["layerDefinitions"]:
+               item["featureTable"]["dataConnection"]["workspaceConnectionString"] = "DATABASE=" + os.path.dirname(dataset);
+               item["featureTable"]["dataConnection"]["dataset"] = os.path.basename(dataset);
+         
+         with open(lyrx_file,"w") as jsonFile:
+            json.dump(data_in,jsonFile);
+            
       #------------------------------------------------------------------------
       #-- Step 10
       #-- Load variables from form parameters
@@ -579,7 +615,8 @@ class SearchUsingStartingPoint(object):
          if boo_show_source:
             if 10006 in ary_eventtypelist \
             or 10009 in ary_eventtypelist \
-            or 10010 in ary_eventtypelist :        
+            or 10010 in ary_eventtypelist \
+            or 0     in ary_eventtypelist :        
             
                scratch_full_source_a = arcpy.CreateUniqueName(
                    base_name  = "ResultSourceAreaLinkedData"
@@ -620,7 +657,8 @@ class SearchUsingStartingPoint(object):
          if boo_show_source:
             if 10006 in ary_eventtypelist \
             or 10009 in ary_eventtypelist \
-            or 10010 in ary_eventtypelist : 
+            or 10010 in ary_eventtypelist \
+            or 0     in ary_eventtypelist : 
                
                scratch_full_source_l = arcpy.CreateUniqueName(
                    base_name  = "ResultSourceLinearLinkedData"
@@ -666,7 +704,7 @@ class SearchUsingStartingPoint(object):
             arcpy.management.CreateFeatureclass(
                 out_path          = os.path.dirname(scratch_full_source_p)
                ,out_name          = os.path.basename(scratch_full_source_p)
-               ,geometry_type     = "POINT"
+               ,geometry_type     = "MULTIPOINT"
                ,has_m             = "DISABLED"
                ,has_z             = "DISABLED"
                ,spatial_reference = arcpy.SpatialReference(3857)
@@ -696,7 +734,8 @@ class SearchUsingStartingPoint(object):
          #------------------------------------------------------------------------
          if 10006 in ary_eventtypelist \
          or 10009 in ary_eventtypelist \
-         or 10010 in ary_eventtypelist : 
+         or 10010 in ary_eventtypelist \
+         or 0     in ary_eventtypelist : 
          
             scratch_full_reached_a = arcpy.CreateUniqueName(
                 base_name  = "ResultReachedAreaLinkedData"
@@ -745,7 +784,8 @@ class SearchUsingStartingPoint(object):
          #------------------------------------------------------------------------
          if 10006 in ary_eventtypelist \
          or 10009 in ary_eventtypelist \
-         or 10010 in ary_eventtypelist : 
+         or 10010 in ary_eventtypelist \
+         or 0     in ary_eventtypelist : 
             
             scratch_full_reached_l = arcpy.CreateUniqueName(
                 base_name  = "ResultReachedLinearLinkedData"
@@ -880,7 +920,7 @@ class SearchUsingStartingPoint(object):
             );
             
          #------------------------------------------------------------------------
-         if boo_attributes and 10028 in ary_eventtypelist:
+         if (boo_attributes and 10028 in ary_eventtypelist) or 0 in ary_eventtypelist:
             
             scratch_frspub_attr = arcpy.CreateUniqueName(
                 base_name  = "ResultFRSPUBAttributes"
@@ -918,7 +958,7 @@ class SearchUsingStartingPoint(object):
             );
          
          #------------------------------------------------------------------------
-         if boo_attributes and 10015 in ary_eventtypelist:
+         if (boo_attributes and 10015 in ary_eventtypelist) or 0 in ary_eventtypelist:
             
             scratch_npdes_attr = arcpy.CreateUniqueName(
                 base_name  = "ResultNPDESAttributes"
@@ -955,7 +995,7 @@ class SearchUsingStartingPoint(object):
             );
             
          #------------------------------------------------------------------------
-         if boo_attributes and 10032 in ary_eventtypelist:
+         if (boo_attributes and 10032 in ary_eventtypelist) or 0 in ary_eventtypelist:
             
             scratch_wqp_attr = arcpy.CreateUniqueName(
                 base_name  = "ResultWQPAttributes"
@@ -1051,7 +1091,7 @@ class SearchUsingStartingPoint(object):
             arcpy.AddMessage(". Failed to connect to " + str(sde_conn_path) + ".");
             
             try:
-               z = os.path.dirname(os.path.realpath(__file__));
+               projpath = os.path.dirname(os.path.realpath(__file__));
                sde_conn_path = os.path.join(z,os.path.basename(sde_connection));
                sde_conn = arcpy.ArcSDESQLExecute(sde_conn_path);
 
@@ -1138,8 +1178,8 @@ class SearchUsingStartingPoint(object):
                   ,p_return_link_path          => 'TRUE'
                   ,p_output_flowlines          => ary_flowlines 
                   ,p_path_distance             => num_path_distance
-                  ,p_end_point                 => sdo_path_line
-                  ,p_path_line                 => sdo_end_point
+                  ,p_end_point                 => sdo_end_point
+                  ,p_path_line                 => sdo_path_line
                   ,p_raindrop_return_code      => int_raindrop_return_code
                   ,p_return_code               => int_return_code
                   ,p_status_message            => str_status_message
@@ -1304,16 +1344,32 @@ class SearchUsingStartingPoint(object):
       #-- Step 100
       #-- Push out results from the geodatabase
       #------------------------------------------------------------------------
+      # source_subdivision is missing from ancient Oracle SDE registered view
       if num_return_code == 0:
          
-         #---------------------------------------------------------------------
          if boo_show_source:
-            if 10006 in ary_eventtypelist \
-            or 10009 in ary_eventtypelist \
-            or 10010 in ary_eventtypelist :
-            
-               with arcpy.da.InsertCursor(
-                   in_table     = scratch_full_source_a
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_full_source_p
+               ,field_names  = [
+                   'eventtype'
+                  ,'program_name'
+                  ,'permid_joinkey'
+                  ,'source_originator'
+                  ,'source_featureid'
+                  ,'source_featureid2'
+                  ,'source_series'
+                  ,'source_joinkey'
+                  ,'start_date'
+                  ,'end_date'
+                  ,'featuredetailurl'
+                  ,'nearest_network_distancekm'
+                  ,'nearest_network_flowtimeday'
+                  ,'SHAPE@'
+                ]
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcpoints"
                   ,field_names  = [
                       'eventtype'
                      ,'program_name'
@@ -1322,49 +1378,23 @@ class SearchUsingStartingPoint(object):
                      ,'source_featureid'
                      ,'source_featureid2'
                      ,'source_series'
-                     ,'source_subdivision'
                      ,'source_joinkey'
                      ,'start_date'
                      ,'end_date'
                      ,'featuredetailurl'
-                     ,'areasqkm'
                      ,'nearest_network_distancekm'
                      ,'nearest_network_flowtimeday'
                      ,'SHAPE@'
                    ]
-               ) as icursor:
-                  
-                  with arcpy.da.SearchCursor(
-                      in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcareas"
-                     ,field_names  = [
-                         'eventtype'
-                        ,'program_name'
-                        ,'permid_joinkey'
-                        ,'source_originator'
-                        ,'source_featureid'
-                        ,'source_featureid2'
-                        ,'source_series'
-                        ,'source_subdivision'
-                        ,'source_joinkey'
-                        ,'start_date'
-                        ,'end_date'
-                        ,'featuredetailurl'
-                        ,'areasqkm'
-                        ,'nearest_network_distancekm'
-                        ,'nearest_network_flowtimeday'
-                        ,'SHAPE@'
-                      ]
-                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-                  ) as scursor:
-               
-                     for row in scursor:
-                        icursor.insertRow(row);
-                        
-               arcpy.SetParameterAsText(10,scratch_full_source_a);
-               
-            else:
-               arcpy.SetParameterAsText(10,"");
-               
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(10,scratch_full_source_p);
+            arcpy.SetParameterSymbology(10,self.source_p);
+            
          else:
             arcpy.SetParameterAsText(10,"");
             
@@ -1378,7 +1408,8 @@ class SearchUsingStartingPoint(object):
          if boo_show_source:
             if 10006 in ary_eventtypelist \
             or 10009 in ary_eventtypelist \
-            or 10010 in ary_eventtypelist :
+            or 10010 in ary_eventtypelist \
+            or 0     in ary_eventtypelist :
 
                with arcpy.da.InsertCursor(
                    in_table     = scratch_full_source_l
@@ -1429,6 +1460,7 @@ class SearchUsingStartingPoint(object):
                         icursor.insertRow(row);
                         
                arcpy.SetParameterAsText(11,scratch_full_source_l);
+               arcpy.SetParameterSymbology(11,self.source_l);
                
             else:
                arcpy.SetParameterAsText(11,"");
@@ -1438,34 +1470,19 @@ class SearchUsingStartingPoint(object):
             
       else:
          arcpy.SetParameterAsText(11,"");
-         
+       
       #------------------------------------------------------------------------
-      # source_subdivision is missing from ancient Oracle SDE registered view
       if num_return_code == 0:
          
+         #---------------------------------------------------------------------
          if boo_show_source:
-            with arcpy.da.InsertCursor(
-                in_table     = scratch_full_source_p
-               ,field_names  = [
-                   'eventtype'
-                  ,'program_name'
-                  ,'permid_joinkey'
-                  ,'source_originator'
-                  ,'source_featureid'
-                  ,'source_featureid2'
-                  ,'source_series'
-                  ,'source_joinkey'
-                  ,'start_date'
-                  ,'end_date'
-                  ,'featuredetailurl'
-                  ,'nearest_network_distancekm'
-                  ,'nearest_network_flowtimeday'
-                  ,'SHAPE@'
-                ]
-            ) as icursor:
-               
-               with arcpy.da.SearchCursor(
-                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcpoints"
+            if 10006 in ary_eventtypelist \
+            or 10009 in ary_eventtypelist \
+            or 10010 in ary_eventtypelist \
+            or 0     in ary_eventtypelist :
+            
+               with arcpy.da.InsertCursor(
+                   in_table     = scratch_full_source_a
                   ,field_names  = [
                       'eventtype'
                      ,'program_name'
@@ -1474,38 +1491,93 @@ class SearchUsingStartingPoint(object):
                      ,'source_featureid'
                      ,'source_featureid2'
                      ,'source_series'
+                     ,'source_subdivision'
                      ,'source_joinkey'
                      ,'start_date'
                      ,'end_date'
                      ,'featuredetailurl'
+                     ,'areasqkm'
                      ,'nearest_network_distancekm'
                      ,'nearest_network_flowtimeday'
                      ,'SHAPE@'
                    ]
-                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-               ) as scursor:
-            
-                  for row in scursor:
-                     icursor.insertRow(row);
-                     
-            arcpy.SetParameterAsText(12,scratch_full_source_p);
-            
+               ) as icursor:
+                  
+                  with arcpy.da.SearchCursor(
+                      in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldsrcareas"
+                     ,field_names  = [
+                         'eventtype'
+                        ,'program_name'
+                        ,'permid_joinkey'
+                        ,'source_originator'
+                        ,'source_featureid'
+                        ,'source_featureid2'
+                        ,'source_series'
+                        ,'source_subdivision'
+                        ,'source_joinkey'
+                        ,'start_date'
+                        ,'end_date'
+                        ,'featuredetailurl'
+                        ,'areasqkm'
+                        ,'nearest_network_distancekm'
+                        ,'nearest_network_flowtimeday'
+                        ,'SHAPE@'
+                      ]
+                     ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+                  ) as scursor:
+               
+                     for row in scursor:
+                        icursor.insertRow(row);
+                        
+               arcpy.SetParameterAsText(12,scratch_full_source_a);
+               arcpy.SetParameterSymbology(12,self.source_a);
+               
+            else:
+               arcpy.SetParameterAsText(12,"");
+               
          else:
             arcpy.SetParameterAsText(12,"");
             
       else:
          arcpy.SetParameterAsText(12,"");
-
+         
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
-         #---------------------------------------------------------------------
-         if 10006 in ary_eventtypelist \
-         or 10009 in ary_eventtypelist \
-         or 10010 in ary_eventtypelist :
-         
-            with arcpy.da.InsertCursor(
-                in_table     = scratch_full_reached_a
+         with arcpy.da.InsertCursor(
+             in_table     = scratch_full_reached_p
+            ,field_names  = [
+                'eventtype' 
+               ,'program_name'   
+               ,'permanent_identifier'
+               ,'permid_joinkey' 
+               ,'eventdate'      
+               ,'reachcode'      
+               ,'reachsmdate'    
+               ,'reachresolution'
+               ,'feature_permanent_identifier'
+               ,'featureclassref'
+               ,'source_originator'
+               ,'source_featureid'
+               ,'source_featureid2'
+               ,'source_datadesc'
+               ,'source_series'  
+               ,'source_subdivision'
+               ,'source_joinkey' 
+               ,'start_date'     
+               ,'end_date'       
+               ,'featuredetailurl'
+               ,'measure'
+               ,'eventoffset'
+               ,'geogstate'      
+               ,'network_distancekm'
+               ,'network_flowtimeday'
+               ,'SHAPE@'
+             ]
+         ) as icursor:
+            
+            with arcpy.da.SearchCursor(
+                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradpoints"
                ,field_names  = [
                    'eventtype' 
                   ,'program_name'   
@@ -1527,54 +1599,22 @@ class SearchUsingStartingPoint(object):
                   ,'start_date'     
                   ,'end_date'       
                   ,'featuredetailurl'
-                  ,'event_areasqkm' 
+                  ,'measure'
+                  ,'eventoffset'
                   ,'geogstate'      
                   ,'network_distancekm'
                   ,'network_flowtimeday'
                   ,'SHAPE@'
                 ]
-            ) as icursor:
-               
-               with arcpy.da.SearchCursor(
-                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradareas"
-                  ,field_names  = [
-                      'eventtype' 
-                     ,'program_name'   
-                     ,'permanent_identifier'
-                     ,'permid_joinkey' 
-                     ,'eventdate'      
-                     ,'reachcode'      
-                     ,'reachsmdate'    
-                     ,'reachresolution'
-                     ,'feature_permanent_identifier'
-                     ,'featureclassref'
-                     ,'source_originator'
-                     ,'source_featureid'
-                     ,'source_featureid2'
-                     ,'source_datadesc'
-                     ,'source_series'  
-                     ,'source_subdivision'
-                     ,'source_joinkey' 
-                     ,'start_date'     
-                     ,'end_date'       
-                     ,'featuredetailurl'
-                     ,'event_areasqkm' 
-                     ,'geogstate'      
-                     ,'network_distancekm'
-                     ,'network_flowtimeday'
-                     ,'SHAPE@'
-                   ]
-                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-               ) as scursor:
-            
-                  for row in scursor:
-                     icursor.insertRow(row);
-                     
-            arcpy.SetParameterAsText(13,scratch_full_reached_a);
-            
-         else:
-            arcpy.SetParameterAsText(13,"");
-            
+               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+            ) as scursor:
+         
+               for row in scursor:
+                  icursor.insertRow(row);
+                  
+         arcpy.SetParameterAsText(13,scratch_full_reached_p);
+         arcpy.SetParameterSymbology(13,self.reached_p);
+         
       else:
          arcpy.SetParameterAsText(13,"");
 
@@ -1584,7 +1624,8 @@ class SearchUsingStartingPoint(object):
          #---------------------------------------------------------------------
          if 10006 in ary_eventtypelist \
          or 10009 in ary_eventtypelist \
-         or 10010 in ary_eventtypelist :
+         or 10010 in ary_eventtypelist \
+         or 0     in ary_eventtypelist :
          
             with arcpy.da.InsertCursor(
                 in_table     = scratch_full_reached_l
@@ -1659,6 +1700,7 @@ class SearchUsingStartingPoint(object):
                      icursor.insertRow(row);
                      
             arcpy.SetParameterAsText(14,scratch_full_reached_l);
+            arcpy.SetParameterSymbology(14,self.reached_l);
             
          else:
             arcpy.SetParameterAsText(14,"");
@@ -1669,40 +1711,14 @@ class SearchUsingStartingPoint(object):
       #------------------------------------------------------------------------
       if num_return_code == 0:
          
-         with arcpy.da.InsertCursor(
-             in_table     = scratch_full_reached_p
-            ,field_names  = [
-                'eventtype' 
-               ,'program_name'   
-               ,'permanent_identifier'
-               ,'permid_joinkey' 
-               ,'eventdate'      
-               ,'reachcode'      
-               ,'reachsmdate'    
-               ,'reachresolution'
-               ,'feature_permanent_identifier'
-               ,'featureclassref'
-               ,'source_originator'
-               ,'source_featureid'
-               ,'source_featureid2'
-               ,'source_datadesc'
-               ,'source_series'  
-               ,'source_subdivision'
-               ,'source_joinkey' 
-               ,'start_date'     
-               ,'end_date'       
-               ,'featuredetailurl'
-               ,'measure'
-               ,'eventoffset'
-               ,'geogstate'      
-               ,'network_distancekm'
-               ,'network_flowtimeday'
-               ,'SHAPE@'
-             ]
-         ) as icursor:
-            
-            with arcpy.da.SearchCursor(
-                in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradpoints"
+         #---------------------------------------------------------------------
+         if 10006 in ary_eventtypelist \
+         or 10009 in ary_eventtypelist \
+         or 10010 in ary_eventtypelist \
+         or 0     in ary_eventtypelist :
+         
+            with arcpy.da.InsertCursor(
+                in_table     = scratch_full_reached_a
                ,field_names  = [
                    'eventtype' 
                   ,'program_name'   
@@ -1724,21 +1740,55 @@ class SearchUsingStartingPoint(object):
                   ,'start_date'     
                   ,'end_date'       
                   ,'featuredetailurl'
-                  ,'measure'
-                  ,'eventoffset'
+                  ,'event_areasqkm' 
                   ,'geogstate'      
                   ,'network_distancekm'
                   ,'network_flowtimeday'
                   ,'SHAPE@'
                 ]
-               ,where_clause = "SESSION_ID = '" + str_session_id + "' "
-            ) as scursor:
-         
-               for row in scursor:
-                  icursor.insertRow(row);
-                  
-         arcpy.SetParameterAsText(15,scratch_full_reached_p);
-         
+            ) as icursor:
+               
+               with arcpy.da.SearchCursor(
+                   in_table     = sde_conn_path + "\\rad_ags.updn_v4_ldradareas"
+                  ,field_names  = [
+                      'eventtype' 
+                     ,'program_name'   
+                     ,'permanent_identifier'
+                     ,'permid_joinkey' 
+                     ,'eventdate'      
+                     ,'reachcode'      
+                     ,'reachsmdate'    
+                     ,'reachresolution'
+                     ,'feature_permanent_identifier'
+                     ,'featureclassref'
+                     ,'source_originator'
+                     ,'source_featureid'
+                     ,'source_featureid2'
+                     ,'source_datadesc'
+                     ,'source_series'  
+                     ,'source_subdivision'
+                     ,'source_joinkey' 
+                     ,'start_date'     
+                     ,'end_date'       
+                     ,'featuredetailurl'
+                     ,'event_areasqkm' 
+                     ,'geogstate'      
+                     ,'network_distancekm'
+                     ,'network_flowtimeday'
+                     ,'SHAPE@'
+                   ]
+                  ,where_clause = "SESSION_ID = '" + str_session_id + "' "
+               ) as scursor:
+            
+                  for row in scursor:
+                     icursor.insertRow(row);
+                     
+            arcpy.SetParameterAsText(15,scratch_full_reached_a);
+            arcpy.SetParameterSymbology(15,self.reached_a);
+            
+         else:
+            arcpy.SetParameterAsText(15,"");
+            
       else:
          arcpy.SetParameterAsText(15,"");
 
@@ -1892,6 +1942,7 @@ class SearchUsingStartingPoint(object):
                raise Exception("err");
                      
             arcpy.SetParameterAsText(16,scratch_full_fl);
+            arcpy.SetParameterSymbology(16,self.flowl_lyrx);
             
          else:
             arcpy.SetParameterAsText(16,"");
@@ -1902,7 +1953,7 @@ class SearchUsingStartingPoint(object):
       #------------------------------------------------------------------------   
       if num_return_code == 0:
          
-         if boo_attributes and 10028 in ary_eventtypelist:
+         if (boo_attributes and 10028 in ary_eventtypelist) or 0 in ary_eventtypelist:
          
             with arcpy.da.InsertCursor(
                 in_table     = scratch_frspub_attr
@@ -1969,7 +2020,7 @@ class SearchUsingStartingPoint(object):
       #------------------------------------------------------------------------   
       if num_return_code == 0:
          
-         if boo_attributes and 10015 in ary_eventtypelist:
+         if (boo_attributes and 10015 in ary_eventtypelist) or 0 in ary_eventtypelist:
          
             with arcpy.da.InsertCursor(
                 in_table     = scratch_npdes_attr
@@ -2034,7 +2085,7 @@ class SearchUsingStartingPoint(object):
       #------------------------------------------------------------------------   
       if num_return_code == 0:
          
-         if boo_attributes and 10032 in ary_eventtypelist:
+         if (boo_attributes and 10032 in ary_eventtypelist) or 0 in ary_eventtypelist:
          
             with arcpy.da.InsertCursor(
                 in_table     = scratch_wqp_attr
@@ -2164,6 +2215,7 @@ class SearchUsingStartingPoint(object):
                   icursor.insertRow(row);
                   
          arcpy.SetParameterAsText(20,scratch_full_link);
+         arcpy.SetParameterSymbology(20,self.linkp_lyrx);
          
       else:
          arcpy.SetParameterAsText(20,"");
@@ -2210,5 +2262,5 @@ def format_number(val):
       return "NULL";
 
    return str(val);
-   
+
    

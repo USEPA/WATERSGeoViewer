@@ -26,28 +26,28 @@ class DelineateUsingStartingPoint(object):
          "<a href='https://watersgeo.epa.gov/openapi/waters/#/Delineation/x131' target='_blank'>" + \
          "EPA service documentation</a>.";
       self.canRunInBackground = False;
-
-   def getParameterInfo(self):
       
-      delin_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultDelineatedArea.lyrx";
-      flowl_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultStreamsSelected.lyrx";
-      catch_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultCatchmentsSelected.lyrx";
-      linkp_lyrx     = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultLinkPath.lyrx";
+      self.delin_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultDelineatedArea.lyrx";
+      self.flowl_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultStreamsSelected.lyrx";
+      self.catch_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultCatchmentsSelected.lyrx";
+      self.linkp_lyrx = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ResultLinkPath.lyrx";
       
       projpath = os.path.dirname(os.path.realpath(__file__));
-      if not arcpy.Exists(delin_lyrx):
-         delin_lyrx = os.path.join(projpath,'ResultDelineatedArea.lyrx');
-      if not arcpy.Exists(flowl_lyrx):
-         flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
-      if not arcpy.Exists(catch_lyrx):
-         catch_lyrx = os.path.join(projpath,'ResultCatchmentsSelected.lyrx');
-      if not arcpy.Exists(linkp_lyrx):
-         linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
-      
+      if not arcpy.Exists(self.delin_lyrx):
+         self.delin_lyrx = os.path.join(projpath,'ResultDelineatedArea.lyrx');
+      if not arcpy.Exists(self.flowl_lyrx):
+         self.flowl_lyrx = os.path.join(projpath,'ResultStreamsSelected.lyrx');      
+      if not arcpy.Exists(self.catch_lyrx):
+         self.catch_lyrx = os.path.join(projpath,'ResultCatchmentsSelected.lyrx');
+      if not arcpy.Exists(self.linkp_lyrx):
+         self.linkp_lyrx = os.path.join(projpath,'ResultLinkPath.lyrx');
+
+   def getParameterInfo(self):
+
       param0 = arcpy.Parameter(
           displayName   = "Stream Selection Type"
          ,name          = "StreamSelectionType"
-         ,datatype      = "String"
+         ,datatype      = "GPString"
          ,parameterType = "Required"
          ,direction     = "Input"
          ,enabled       = True
@@ -74,7 +74,7 @@ class DelineateUsingStartingPoint(object):
       param2 = arcpy.Parameter(
           displayName   = "Max Distance (Km)"
          ,name          = "MaxDistanceKm"
-         ,datatype      = "String"
+         ,datatype      = "GPString"
          ,parameterType = "Optional"
          ,direction     = "Input"
          ,enabled       = True
@@ -83,7 +83,7 @@ class DelineateUsingStartingPoint(object):
       param3 = arcpy.Parameter(
           displayName   = "Max Flowtime (Day)"
          ,name          = "MaxFlowtimeDay"
-         ,datatype      = "String"
+         ,datatype      = "GPString"
          ,parameterType = "Optional"
          ,direction     = "Input"
          ,enabled       = True
@@ -126,7 +126,7 @@ class DelineateUsingStartingPoint(object):
       param7 = arcpy.Parameter(
           displayName   = "Advanced Configuration"
          ,name          = "AdvancedConfiguration"
-         ,datatype      = "String"
+         ,datatype      = "GPString"
          ,parameterType = "Optional"
          ,direction     = "Input"
          ,enabled       = True
@@ -139,7 +139,10 @@ class DelineateUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param8.symbology = delin_lyrx;
+      param8.schema.featureTypeRule  = "AsSpecified";
+      param8.schema.featureType      = "Simple";
+      param8.schema.geometryTypeRule = "AsSpecified";
+      param8.schema.geometryType     = "Polygon";
 
       param9 = arcpy.Parameter(
           displayName   = "Result Streams Selected"
@@ -148,7 +151,10 @@ class DelineateUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param9.symbology = flowl_lyrx;
+      param9.schema.featureTypeRule  = "AsSpecified";
+      param9.schema.featureType      = "Simple";
+      param9.schema.geometryTypeRule = "AsSpecified";
+      param9.schema.geometryType     = "Polyline";
       
       param10 = arcpy.Parameter(
           displayName   = "Result Catchments Selected"
@@ -157,7 +163,10 @@ class DelineateUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param10.symbology = catch_lyrx; 
+      param10.schema.featureTypeRule  = "AsSpecified";
+      param10.schema.featureType      = "Simple";
+      param10.schema.geometryTypeRule = "AsSpecified";
+      param10.schema.geometryType     = "Polygon";
       
       param11 = arcpy.Parameter(
           displayName   = "Result Link Path"
@@ -166,7 +175,10 @@ class DelineateUsingStartingPoint(object):
          ,parameterType = "Derived"
          ,direction     = "Output"
       );
-      param11.symbology = linkp_lyrx;
+      param11.schema.featureTypeRule  = "AsSpecified";
+      param11.schema.featureType      = "Simple";
+      param11.schema.geometryTypeRule = "AsSpecified";
+      param11.schema.geometryType     = "Polyline";
       
       param12 = arcpy.Parameter(
           displayName   = "Status Message"
@@ -213,7 +225,6 @@ class DelineateUsingStartingPoint(object):
 	   # check for the .sde file here first but will fall back the script location if not found.
       
       sde_connection = r"D:\Public\Data\pdziemie\github\WATERSGeoViewer\src\gp\Oracle\GeoplatformDrainageAreaDelineationEB\ora_rad_ags.sde";
-      projpath = os.path.dirname(os.path.realpath(__file__));
       
       #------------------------------------------------------------------------
       def strip_empty(val):
@@ -503,6 +514,7 @@ class DelineateUsingStartingPoint(object):
             arcpy.AddMessage(". Failed to connect to " + str(sde_conn_path) + ".");
             
             try:
+               projpath = os.path.dirname(os.path.realpath(__file__));
                sde_conn_path = os.path.join(projpath,os.path.basename(sde_connection));
                sde_conn = arcpy.ArcSDESQLExecute(sde_conn_path);
 
@@ -591,8 +603,8 @@ class DelineateUsingStartingPoint(object):
                   ,p_return_link_path          => 'TRUE'
                   ,p_output_flowlines          => ary_flowlines 
                   ,p_path_distance             => num_path_distance
-                  ,p_end_point                 => sdo_path_line
-                  ,p_path_line                 => sdo_end_point
+                  ,p_end_point                 => sdo_end_point
+                  ,p_path_line                 => sdo_path_line
                   ,p_raindrop_return_code      => int_raindrop_return_code
                   ,p_return_code               => int_return_code
                   ,p_status_message            => str_status_message
@@ -639,16 +651,16 @@ class DelineateUsingStartingPoint(object):
                END IF;
                ----------------------------------------------------------------------
                INSERT INTO
-               nhdplus_indexing.tmp_pt_indexing_status(
+               nhdplus_indexing.tmp_indexing_path(
                    objectid
                   ,session_id
-                  ,session_datestamp
-                  ,indexing_line_lengthkm
-                  ,indexing_line
+                  ,pathid
+                  ,lengthkm
+                  ,shape
                ) VALUES (
-                   nhdplus_indexing.tmp_pt_indexing_status_seq.NEXTVAL
+                   nhdplus_indexing.tmp_indexing_path_seq.NEXTVAL
                   ,str_session_id
-                  ,SYSTIMESTAMP
+                  ,'START'
                   ,ROUND(num_path_distance,3)
                   ,sdo_path_line
                );
@@ -764,6 +776,7 @@ class DelineateUsingStartingPoint(object):
       #-- Push out results from the geodatabase
       #------------------------------------------------------------------------
       if num_return_code == 0:
+         cnt = 0;
          
          with arcpy.da.InsertCursor(
              in_table     = scratch_full_delin
@@ -790,8 +803,10 @@ class DelineateUsingStartingPoint(object):
          
                for row in scursor:
                   icursor.insertRow(row);
+                  cnt = cnt + 1;
 
          arcpy.SetParameterAsText(8 ,scratch_full_delin);
+         arcpy.SetParameterSymbology(8 ,self.delin_lyrx);
          
       else:
          arcpy.SetParameterAsText(8 ,"");
@@ -800,6 +815,7 @@ class DelineateUsingStartingPoint(object):
       if num_return_code == 0:
          
          if boo_nav_results:
+            cnt = 0;
             
             with arcpy.da.InsertCursor(
                 in_table     = scratch_full_fl
@@ -844,8 +860,10 @@ class DelineateUsingStartingPoint(object):
             
                   for row in scursor:
                      icursor.insertRow(row);
+                     cnt = cnt + 1;
                      
             arcpy.SetParameterAsText(9 ,scratch_full_fl);
+            arcpy.SetParameterSymbology(9 ,self.flowl_lyrx);
          
          else:
             arcpy.SetParameterAsText(9 ,"");
@@ -857,6 +875,7 @@ class DelineateUsingStartingPoint(object):
       if num_return_code == 0:
          
          if boo_catch_results:
+            cnt = 0;
             
             with arcpy.da.InsertCursor(
                 in_table     = scratch_full_catch
@@ -883,8 +902,10 @@ class DelineateUsingStartingPoint(object):
             
                   for row in scursor:
                      icursor.insertRow(row);
+                     cnt = cnt + 1;
                           
             arcpy.SetParameterAsText(10,scratch_full_catch);
+            arcpy.SetParameterSymbology(10,self.catch_lyrx);
             
          else:
             arcpy.SetParameterAsText(10,"");
@@ -894,6 +915,7 @@ class DelineateUsingStartingPoint(object):
          
       #------------------------------------------------------------------------
       if num_return_code == 0:
+         cnt = 0;
          
          with arcpy.da.InsertCursor(
              in_table     = scratch_full_link
@@ -912,11 +934,13 @@ class DelineateUsingStartingPoint(object):
          
                for row in scursor:
                   icursor.insertRow(row);
+                  cnt = cnt + 1;
 
          arcpy.SetParameterAsText(11,scratch_full_link);
+         arcpy.SetParameterSymbology(11,self.linkp_lyrx);
          
       else:
-         arcpy.SetParameterAsText(11 ,"");
+         arcpy.SetParameterAsText(11,"");
 
       #------------------------------------------------------------------------
       #-- Step 100
