@@ -134,7 +134,7 @@ resultFC = tb.SearchUsingStartingPoint(
     StreamSelectionType      = "Upstream with Tributaries"
    ,StartingPoint            = sp
    ,MaxDistanceKm            = "35"
-   ,SearchForTheseLinkedData = "Debug;Water Quality Portal Monitoring Data;Facilities that Discharge to Water;Fish Consumption Advisories;Facility Registry Service"
+   ,SearchForTheseLinkedData = "Debug"
    ,ShowSelectedStreams      = "True"
    ,ShowSourceData           = "True"
    ,AttributeHandling        = "Tabular Attributes"
@@ -142,6 +142,66 @@ resultFC = tb.SearchUsingStartingPoint(
    ,AdvancedConfiguration    = ""
 );
 arcpy.AddMessage(" Success.");
+
+#------------------------------------------------------------------------------
+#- Step 50
+#- Jiggle items into place to make packaging happy
+#------------------------------------------------------------------------------
+if arcpy.Exists('./lyrx.gdb'):
+   arcpy.management.Delete('./lyrx.gdb');
+   
+arcpy.management.CreateFileGDB(
+   out_folder_path = '.'
+  ,out_name        = 'lyrx.gdb'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(0))
+   ,out_features = './lyrx.gdb/ResultSourcePointLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(1))
+   ,out_features = './lyrx.gdb/ResultSourceLinearLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(2))
+   ,out_features = './lyrx.gdb/ResultSourceAreaLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(3))
+   ,out_features = './lyrx.gdb/ResultReachedPointLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(4))
+   ,out_features = './lyrx.gdb/ResultReachedLinearLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(5))
+   ,out_features = './lyrx.gdb/ResultReachedAreaLinkedData'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(6))
+   ,out_features = './lyrx.gdb/ResultStreamsSelected'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(10))
+   ,out_features = './lyrx.gdb/ResultLinkPath'
+   ,where_clause = 'objectid = 0'
+);
 
 #------------------------------------------------------------------------------
 #- Step 60
@@ -341,6 +401,11 @@ arcpy.server.UploadServiceDefinition(
    ,in_server  = ags_conn
 );
 
+#------------------------------------------------------------------------------
+#- Step 100
+#- Cleanup and exit
+#------------------------------------------------------------------------------
+arcpy.management.Delete('./lyrx.gdb');
 arcpy.AddMessage("Deployment Complete.");
 arcpy.AddMessage(" ");
 

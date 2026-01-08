@@ -36,9 +36,9 @@
                 "editable": true,
                 "dataConnection": {
                     "type": "CIMStandardDataConnection",
-                    "workspaceConnectionString": "DATABASE=",
+                    "workspaceConnectionString": "DATABASE=./lyrx.gdb",
                     "workspaceFactory": "FileGDB",
-                    "dataset": "",
+                    "dataset": "ResultReachedLinearLinkedData",
                     "datasetType": "esriDTFeatureClass"
                 },
                 "studyAreaSpatialRel": "esriSpatialRelUndefined",

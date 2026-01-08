@@ -140,6 +140,42 @@ resultFC = tb.DelineateUsingStartingPoint(
 arcpy.AddMessage(" Success.");
 
 #------------------------------------------------------------------------------
+#- Step 50
+#- Jiggle items into place to make packaging happy
+#------------------------------------------------------------------------------
+if arcpy.Exists('./lyrx.gdb'):
+   arcpy.management.Delete('./lyrx.gdb');
+   
+arcpy.management.CreateFileGDB(
+   out_folder_path = '.'
+  ,out_name        = 'lyrx.gdb'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(0))
+   ,out_features = './lyrx.gdb/ResultDelineatedArea'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(1))
+   ,out_features = './lyrx.gdb/ResultStreamsSelected'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(2))
+   ,out_features = './lyrx.gdb/ResultCatchmentsSelected'
+   ,where_clause = 'objectid = 0'
+);
+
+arcpy.conversion.ExportFeatures(
+    in_features  = str(resultFC.getOutput(3))
+   ,out_features = './lyrx.gdb/ResultLinkPath'
+   ,where_clause = 'objectid = 0'
+);
+
+#------------------------------------------------------------------------------
 #- Step 60
 #- Create the sddraft file
 #------------------------------------------------------------------------------
@@ -331,6 +367,11 @@ arcpy.server.UploadServiceDefinition(
    ,in_server  = ags_conn
 );
 
+#------------------------------------------------------------------------------
+#- Step 100
+#- Cleanup and exit
+#------------------------------------------------------------------------------
+arcpy.management.Delete('./lyrx.gdb');
 arcpy.AddMessage("Deployment Complete.");
 arcpy.AddMessage(" ");
 
